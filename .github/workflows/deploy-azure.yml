@@ -42,7 +42,13 @@ jobs:
 
       - name: Build and Push API to ACR
         run: |
-          az acr build --registry acrvaudtaxai --image vaudtaxai-api:${{ github.sha }} .
+          az acr login --name acrvaudtaxai
+          docker buildx build \
+            --platform linux/amd64 \
+            --tag acrvaudtaxai.azurecr.io/vaudtaxai-api:${{ github.sha }} \
+            --tag acrvaudtaxai.azurecr.io/vaudtaxai-api:latest \
+            --push \
+            .
 
       - name: Deploy API to Container Apps
         run: |
@@ -53,9 +59,15 @@ jobs:
 
       - name: Build and Push UI to ACR
         run: |
-          az acr build --registry acrvaudtaxai --image vaudtaxai-ui:${{ github.sha }} \
+          az acr login --name acrvaudtaxai
+          docker buildx build \
+            --platform linux/amd64 \
             --build-arg VITE_API_BASE_URL=https://api.tax-gpt.online \
-            -f "Vaud Tax Guide/Dockerfile.ui" "Vaud Tax Guide"
+            --file "Vaud Tax Guide/Dockerfile.ui" \
+            --tag acrvaudtaxai.azurecr.io/vaudtaxai-ui:${{ github.sha }} \
+            --tag acrvaudtaxai.azurecr.io/vaudtaxai-ui:latest \
+            --push \
+            "Vaud Tax Guide"
 
       - name: Deploy UI to Container Apps
         run: |
