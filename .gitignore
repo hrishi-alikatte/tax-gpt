@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Secrets & env
+.env
+.env.local
+.env.*.local
+
+# Local DBs and caches
+*.db
+*.sqlite
+*.sqlite3
+chroma_db_*/
+**/chroma_db_*/
+model_cache/
+**/model_cache/
+
+# User uploads — NEVER commit real tax documents
+data/uploads/
+data/private/
+*.pdf
+*.docx
+!data/official/**/*.pdf
+!data/official/**/*.docx
+!docs/**/*.pdf
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Build / runtime
+dist/
+build/
+*.log
+
+# Claude Code worktrees (created locally; not part of source)
+.claude/worktrees/
