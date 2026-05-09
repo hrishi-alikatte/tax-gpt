@@ -1,0 +1,17 @@
+{
+  "scenario_id": "divorced_with_alimony",
+  "synthetic": true,
+  "_disclaimer": "Synthetic persona only. Not a real person. No real AHV / IBAN / address.",
+  "_summary": "David, divorced, 1 child age 8 (50% custody), Lausanne -> Renens commute, employed at Acme SA, NO workplace canteen. Has salary + insurance + bank. Missing: pillar 3a, childcare, transport. Demonstrates a more complex profile -> 4 findings (3 likely_missing + 1 nice_to_have meal).",
+  "first_name": "David",
+  "permit_type": "C",
+  "marital_status": "divorced",
+  "spouse_works": null,
+  "children_count": 1,
+  "children_ages": [8],
+  "commune_of_residence": "Lausanne",
+  "employer_name": "Acme SA",
+  "work_commune": "Renens",
+  "tax_year": 2024,
+  "has_workplace_canteen": false
+}

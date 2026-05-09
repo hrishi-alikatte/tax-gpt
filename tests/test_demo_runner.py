@@ -136,3 +136,62 @@ def test_runner_unknown_scenario_raises_system_exit(
 ) -> None:
     with pytest.raises(SystemExit):
         runner.main(["--scenario", "definitely-does-not-exist"])
+
+
+def test_runner_single_no_kids_scenario(
+    azure_env: None, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """Alex: single, no kids, no commute, has insurance + bank, missing 3a only."""
+    rc = runner.main(["--scenario", "single_no_kids", "--strict-3s"])
+    out = capsys.readouterr().out
+    assert rc == 0, out
+    assert "[OK]" in out
+    assert "VD-PILLAR3A-001" in out
+    assert "[Vaud 2025 Instructions p.31]" in out
+    # Sanity: the more-complex findings must NOT fire for this scenario.
+    assert "VD-CHILDCARE-001" not in out
+    assert "VD-COMMUTE-001" not in out
+    assert "VD-MEAL-001" not in out
+
+
+def test_runner_divorced_with_alimony_scenario(
+    azure_env: None, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """David: divorced, 1 child, Lausanne -> Renens, no canteen.
+    Missing pillar 3a + childcare + transport + meal.
+    """
+    rc = runner.main(["--scenario", "divorced_with_alimony", "--strict-3s"])
+    out = capsys.readouterr().out
+    assert rc == 0, out
+    assert "[OK]" in out
+    for token in (
+        "VD-CHILDCARE-001",
+        "VD-COMMUTE-001",
+        "VD-PILLAR3A-001",
+        "VD-MEAL-001",
+    ):
+        assert token in out, f"missing {token} in runner output"
+
+
+def test_runner_three_scenarios_all_distinct_finding_counts(
+    azure_env: None, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """All three demo scenarios produce different finding counts.
+
+    Generalisation tripwire: if engine logic ever drifts to produce the
+    same shape regardless of profile, this test fails loudly.
+    """
+    counts: dict[str, int] = {}
+    for scenario in (
+        "expat_c_permit_basic",
+        "single_no_kids",
+        "divorced_with_alimony",
+    ):
+        rc = runner.main(["--scenario", scenario])
+        capsys.readouterr()
+        result = runner._run(scenario)
+        counts[scenario] = len(result.findings_summary)
+        assert rc == 0
+    assert len(set(counts.values())) == 3, (
+        f"expected 3 distinct finding counts, got {counts}"
+    )

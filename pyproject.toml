@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vaudtaxai"
+version = "0.1.0"
+description = "English-first Vaud-only tax filing copilot for C-permit expat employees."
+requires-python = ">=3.11"
+readme = "CLAUDE.md"
+license = { text = "Proprietary" }
+authors = [{ name = "hrishi-alikatte" }]
+keywords = ["vaud", "tax", "rag", "azure-openai", "flet"]
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Private :: Do Not Upload",
+]
+
+# Runtime deps live in requirements.txt for the desktop demo (pinned ranges
+# pre-date this pyproject.toml). Editable install (`pip install -e .`) wires
+# the package layout so `python main.py` and `python -m demo.runner` work
+# without PYTHONPATH=. — it does NOT replace `pip install -r requirements.txt`.
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["TaxAI2025*", "demo*"]
+exclude = ["tests*", "scripts*", "infra*", ".venv*", "chroma_db_*"]

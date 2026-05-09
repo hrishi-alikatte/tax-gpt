@@ -1,0 +1,17 @@
+{
+  "scenario_id": "single_no_kids",
+  "synthetic": true,
+  "_disclaimer": "Synthetic persona only. Not a real person. No real AHV / IBAN / address.",
+  "_summary": "Alex, single, lives + works in Lausanne (no commute), employed at Beta SA with workplace canteen. Has insurance + bank confirmed. Missing only pillar 3a -> 1 finding.",
+  "first_name": "Alex",
+  "permit_type": "C",
+  "marital_status": "single",
+  "spouse_works": null,
+  "children_count": 0,
+  "children_ages": [],
+  "commune_of_residence": "Lausanne",
+  "employer_name": "Beta SA",
+  "work_commune": "Lausanne",
+  "tax_year": 2024,
+  "has_workplace_canteen": true
+}

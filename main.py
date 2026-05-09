@@ -6,12 +6,7 @@ by a user click in the upload or explain view.
 """
 from __future__ import annotations
 
-import os
-import sys
-
 import flet as ft
-
-sys.path.append(os.getcwd())
 
 try:
     from dotenv import load_dotenv

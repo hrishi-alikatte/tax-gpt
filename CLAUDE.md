@@ -131,22 +131,38 @@ Future target modules (to be added during implementation phases — see `docs/AR
 
 ## 8. Common commands
 
+First-time setup (after cloning):
+
 ```bash
-# Run the Flet app (legacy chat UI; still boots)
+python -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/pip install -e .
+cp .env.example .env  # then fill values
+```
+
+`pip install -e .` reads `pyproject.toml` and makes `TaxAI2025` and `demo`
+importable from any directory — no more `PYTHONPATH=.`.
+
+```bash
+# Run the Flet app (six-screen confirmation flow)
 python main.py
+DEMO_MODE=replay python main.py     # walks Sarah end-to-end without live LLM at upload
 
 # Tests (no live network; stubs only)
 pytest
 
 # One-shot live Azure smoke (manual; never runs in CI)
-python scripts/smoke_rag_azure.py
+python scripts/smoke_rag_azure.py fixture
+python scripts/smoke_rag_azure.py ingest
+python scripts/smoke_rag_azure.py ask "What is Pillar 3a in VaudTax?"
 
 # Lint / type-check (once configured)
 ruff check .
 mypy TaxAI2025
 
-# Demo replay (once demo runner lands in M5)
-python -m vaudtax.demo.runner --scenario expat_c_permit_basic
+# Demo replay (deterministic; <3s)
+python -m demo.runner --scenario expat_c_permit_basic
+python -m demo.runner --scenario expat_c_permit_basic --strict-3s --verbose
 ```
 
 `requirements.txt` was modernized for Azure: `langchain-classic` removed; `openai`, `groq`, `langchain-openai`, `langgraph`, `python-dotenv`, `pytest` added. Legacy HF embedding + `langchain-groq` packages remain so the old `brain/rag.py` path still imports.

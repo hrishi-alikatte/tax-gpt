@@ -10,6 +10,7 @@ import flet as ft
 
 from TaxAI2025.completeness import Finding, evaluate
 from TaxAI2025.completeness.schema import Severity
+from TaxAI2025.ui.components.citation_chip import open_pdf_at_page
 from TaxAI2025.ui.components.footer import build_footer
 from TaxAI2025.ui.navigation import Navigator, Screen
 from TaxAI2025.ui.state import AppState, UserProfile
@@ -61,17 +62,41 @@ def _asks_for_chips(asks_for: list[str]) -> ft.Control:
     return ft.Row(chips, spacing=6, wrap=True)
 
 
-def _citation_chip(finding: Finding) -> ft.Control:
-    return ft.Container(
-        content=ft.Text(_citation_text(finding), size=11, color="#3730A3"),
+def _citation_chip(finding: Finding, state: AppState) -> ft.Control:
+    page = finding.pdf_page
+
+    def _on_click(_e) -> None:  # noqa: ANN001
+        if page is None:
+            return
+        open_pdf_at_page(page)
+        state.record("navigated", target="pdf", pdf_page=page, rule_id=finding.rule_id)
+
+    chip = ft.Container(
+        content=ft.Row(
+            [
+                ft.Icon(ft.icons.MENU_BOOK_OUTLINED, size=12, color="#3730A3"),
+                ft.Text(_citation_text(finding), size=11, color="#3730A3"),
+            ],
+            spacing=4,
+            tight=True,
+        ),
         bgcolor="#EEF2FF",
-        padding=ft.padding.symmetric(vertical=3, horizontal=8),
+        padding=ft.padding.symmetric(vertical=4, horizontal=8),
         border_radius=8,
         border=ft.border.all(1, "#C7D2FE"),
+        tooltip=(
+            f"Open Vaud 2025 Instructions at p.{page} in your PDF viewer"
+            if page is not None
+            else "Page pending verification"
+        ),
     )
+    if page is not None:
+        chip.on_click = _on_click
+        chip.ink = True
+    return chip
 
 
-def _finding_card(finding: Finding) -> ft.Control:
+def _finding_card(finding: Finding, state: AppState) -> ft.Control:
     return ft.Container(
         content=ft.Column(
             [
@@ -105,7 +130,7 @@ def _finding_card(finding: Finding) -> ft.Control:
                     spacing=8,
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
                 ),
-                _citation_chip(finding),
+                _citation_chip(finding, state),
             ],
             spacing=8,
         ),
@@ -116,11 +141,11 @@ def _finding_card(finding: Finding) -> ft.Control:
     )
 
 
-def _section(title: str, findings: list[Finding]) -> ft.Control:
+def _section(title: str, findings: list[Finding], state: AppState) -> ft.Control:
     return ft.Column(
         [
             ft.Text(title, size=15, weight="w700", color="#475569"),
-            *[_finding_card(f) for f in findings],
+            *[_finding_card(f, state) for f in findings],
         ],
         spacing=10,
     )
@@ -149,7 +174,7 @@ def build_completeness_view(state: AppState, navigator: Navigator) -> ft.Control
     for severity in ("blocker", "likely_missing", "nice_to_have"):
         bucket = grouped[severity]  # type: ignore[index]
         if bucket:
-            sections.append(_section(SEVERITY_LABELS[severity], bucket))  # type: ignore[index]
+            sections.append(_section(SEVERITY_LABELS[severity], bucket, state))  # type: ignore[index]
 
     if not findings:
         sections.append(

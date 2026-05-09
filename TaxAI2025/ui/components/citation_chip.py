@@ -7,11 +7,38 @@ the chip still shows the citation token.
 """
 from __future__ import annotations
 
+import logging
+import webbrowser
 from typing import Callable
 
 import flet as ft
 
+from TaxAI2025.core import config
 from TaxAI2025.rag.schema import RagCitation
+
+logger = logging.getLogger(__name__)
+
+
+def open_pdf_at_page(pdf_page: int | None) -> bool:
+    """Open the active Vaud corpus PDF at `pdf_page` (1-indexed).
+
+    Most PDF viewers honour the `#page=N` URI fragment for local files.
+    Returns True if a viewer was launched, False if no page or no corpus.
+    Never raises — failures are logged and silenced so the UI stays usable.
+    """
+    if pdf_page is None or pdf_page < 1:
+        return False
+    try:
+        path = config.active_corpus_path()
+    except Exception as e:  # noqa: BLE001
+        logger.debug("active_corpus_path unavailable: %s", e)
+        return False
+    try:
+        webbrowser.open(f"file://{path.resolve()}#page={pdf_page}")
+        return True
+    except Exception as e:  # noqa: BLE001
+        logger.debug("webbrowser.open failed: %s", e)
+        return False
 
 
 def build_citation_chip(
@@ -52,4 +79,4 @@ def build_citation_chip(
     return chip
 
 
-__all__ = ["build_citation_chip"]
+__all__ = ["build_citation_chip", "open_pdf_at_page"]

@@ -13,7 +13,10 @@ from typing import Any, Callable
 import flet as ft
 
 from TaxAI2025.rag.schema import GroundedAnswer, RagCitation
-from TaxAI2025.ui.components.citation_chip import build_citation_chip
+from TaxAI2025.ui.components.citation_chip import (
+    build_citation_chip,
+    open_pdf_at_page,
+)
 from TaxAI2025.ui.components.footer import build_footer
 from TaxAI2025.ui.navigation import Navigator, Screen
 from TaxAI2025.ui.state import AppState
@@ -114,11 +117,27 @@ def build_explain_view(
             )
             if outcome.citations:
                 answer_panel.controls.append(
-                    ft.Text("Citations", size=12, weight="w700", color="#0F172A"),
+                    ft.Text(
+                        "Citations (click to open the source page)",
+                        size=12, weight="w700", color="#0F172A",
+                    ),
                 )
                 answer_panel.controls.append(
                     ft.Row(
-                        [build_citation_chip(c) for c in outcome.citations],
+                        [
+                            build_citation_chip(
+                                c,
+                                on_click=lambda cit: (
+                                    open_pdf_at_page(cit.pdf_page),
+                                    state.record(
+                                        "navigated",
+                                        target="pdf",
+                                        pdf_page=cit.pdf_page,
+                                    ),
+                                ),
+                            )
+                            for c in outcome.citations
+                        ],
                         wrap=True, spacing=8, run_spacing=8,
                     ),
                 )

@@ -1,0 +1,18 @@
+{
+  "_doc": "Expected outputs. David: divorced + 1 child + commute + no canteen + no 3a / childcare / transport facts.",
+  "facts_count": 4,
+  "findings_count": 4,
+  "findings_rule_ids": [
+    "VD-CHILDCARE-001",
+    "VD-COMMUTE-001",
+    "VD-PILLAR3A-001",
+    "VD-MEAL-001"
+  ],
+  "findings_pdf_pages": {
+    "VD-CHILDCARE-001": 44,
+    "VD-COMMUTE-001": 20,
+    "VD-PILLAR3A-001": 31,
+    "VD-MEAL-001": 21
+  },
+  "max_elapsed_seconds": 3.0
+}
