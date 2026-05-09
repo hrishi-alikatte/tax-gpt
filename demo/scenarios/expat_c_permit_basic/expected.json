@@ -1,0 +1,16 @@
+{
+  "_doc": "Expected outputs for the demo runner. Pinned 2026-05-09 after the vaud-tax-domain-analyst page-pinning pass.",
+  "facts_count": 5,
+  "findings_count": 3,
+  "findings_rule_ids": [
+    "VD-CHILDCARE-001",
+    "VD-COMMUTE-001",
+    "VD-PILLAR3A-001"
+  ],
+  "findings_pdf_pages": {
+    "VD-CHILDCARE-001": 44,
+    "VD-COMMUTE-001": 20,
+    "VD-PILLAR3A-001": 31
+  },
+  "max_elapsed_seconds": 3.0
+}
