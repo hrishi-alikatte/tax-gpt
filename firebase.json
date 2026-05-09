@@ -1,0 +1,20 @@
+{
+  "hosting": {
+    "target": "vaudtaxai",
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "vaudtaxai-web",
+          "region": "europe-west6"
+        }
+      }
+    ]
+  }
+}

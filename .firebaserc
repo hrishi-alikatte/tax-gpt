@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "x-plateau-493313-s8"
+  },
+  "targets": {
+    "x-plateau-493313-s8": {
+      "hosting": {
+        "vaudtaxai": [
+          "x-plateau-493313-s8"
+        ]
+      }
+    }
+  }
+}

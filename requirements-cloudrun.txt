@@ -6,7 +6,7 @@
 pydantic>=2.7.0,<2.9.0
 python-dotenv>=1.0.0
 
-flet>=0.21.0
+flet==0.21.2
 
 chromadb>=0.4.0
 pypdf>=4.0.0
@@ -14,3 +14,6 @@ pdfplumber>=0.11.0
 
 openai>=1.40.0
 groq>=0.11.0
+
+uvicorn>=0.30.0
+fastapi>=0.110.0

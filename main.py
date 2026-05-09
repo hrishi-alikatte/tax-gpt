@@ -9,6 +9,8 @@ from __future__ import annotations
 import os
 
 import flet as ft
+import flet.fastapi as flet_fastapi
+import uvicorn
 
 try:
     from dotenv import load_dotenv
@@ -222,30 +224,14 @@ def main(page: ft.Page) -> None:
         print("Live mode — extraction and RAG will hit the configured providers.")
 
 
-def cloud_run_port() -> int | None:
-    """Return the Cloud Run port when the app is running as a web service."""
-    value = os.environ.get("PORT")
-    if value is None or not value.strip():
-        return None
-    return int(value)
-
-
-def app_run_kwargs() -> dict[str, object]:
-    """Build Flet startup kwargs for local desktop or Cloud Run web mode."""
-    port = cloud_run_port()
-    if port is None:
-        return {"target": main}
-    return {
-        "target": main,
-        "view": ft.AppView.WEB_BROWSER,
-        "host": "0.0.0.0",
-        "port": port,
-    }
-
-
-def run_app() -> None:
-    ft.app(**app_run_kwargs())
-
+# Cloud Run / Web App entrypoint using FastAPI adapter for Flet
+app = flet_fastapi.app(main, upload_dir="uploads")
 
 if __name__ == "__main__":
-    run_app()
+    # If PORT is set, we are in Cloud Run web mode
+    port = int(os.environ.get("PORT", "8080"))
+    if "PORT" in os.environ:
+        uvicorn.run(app, host="0.0.0.0", port=port)
+    else:
+        # Local desktop mode
+        ft.app(target=main)
