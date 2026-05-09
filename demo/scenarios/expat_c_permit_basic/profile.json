@@ -1,0 +1,15 @@
+{
+  "scenario_id": "expat_c_permit_basic",
+  "synthetic": true,
+  "_disclaimer": "Synthetic persona only. Not a real person. No real AHV / IBAN / address.",
+  "first_name": "Sarah",
+  "permit_type": "C",
+  "marital_status": "married",
+  "spouse_works": true,
+  "children_count": 1,
+  "children_ages": [3],
+  "commune_of_residence": "Lausanne",
+  "employer_name": "ACME SA",
+  "work_commune": "Renens",
+  "tax_year": 2024
+}

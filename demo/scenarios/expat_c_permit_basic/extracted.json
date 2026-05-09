@@ -1,0 +1,111 @@
+{
+  "_disclaimer": "Synthetic data only. Not a real Certificat de salaire.",
+  "document": {
+    "doc_id": "demo-doc-0001",
+    "filename": "synthetic_certificat_de_salaire_2024.pdf",
+    "file_path": "<replay>/synthetic_certificat_de_salaire_2024.pdf",
+    "document_type": "salary_certificate",
+    "classifier_confidence": 0.95,
+    "classifier_method": "heuristic",
+    "uploaded_at": "2025-01-15T10:00:00",
+    "pdf_page_count": 1
+  },
+  "facts": [
+    {
+      "canonical_field": "salary.gross_annual_chf",
+      "value": 120000.00,
+      "source_doc": "synthetic_certificat_de_salaire_2024.pdf",
+      "source_page": 1,
+      "source_bbox": null,
+      "confidence": 1.0,
+      "extraction_method": "regex",
+      "model_name": null,
+      "extracted_at": "2025-01-15T10:00:01",
+      "confirmed_by_user": false
+    },
+    {
+      "canonical_field": "salary.net_annual_chf",
+      "value": 96000.00,
+      "source_doc": "synthetic_certificat_de_salaire_2024.pdf",
+      "source_page": 1,
+      "source_bbox": null,
+      "confidence": 1.0,
+      "extraction_method": "regex",
+      "model_name": null,
+      "extracted_at": "2025-01-15T10:00:01",
+      "confirmed_by_user": false
+    },
+    {
+      "canonical_field": "health_insurance.annual_premium_chf",
+      "value": 5400.00,
+      "source_doc": "synthetic_health_insurance_2024.pdf",
+      "source_page": 1,
+      "source_bbox": null,
+      "confidence": 1.0,
+      "extraction_method": "regex",
+      "model_name": null,
+      "extracted_at": "2025-01-15T10:00:02",
+      "confirmed_by_user": false
+    },
+    {
+      "canonical_field": "childcare.total_paid_chf",
+      "value": 18000.00,
+      "source_doc": "synthetic_daycare_invoice_2024.pdf",
+      "source_page": 1,
+      "source_bbox": null,
+      "confidence": 0.85,
+      "extraction_method": "llm_structured",
+      "model_name": "azure:gpt-5-4-mini-extract",
+      "extracted_at": "2025-01-15T10:00:03",
+      "confirmed_by_user": false
+    },
+    {
+      "canonical_field": "pillar_3a.annual_contribution_chf",
+      "value": 7056.00,
+      "source_doc": "synthetic_pillar3a_attestation_2024.pdf",
+      "source_page": 1,
+      "source_bbox": null,
+      "confidence": 1.0,
+      "extraction_method": "regex",
+      "model_name": null,
+      "extracted_at": "2025-01-15T10:00:04",
+      "confirmed_by_user": false
+    },
+    {
+      "canonical_field": "transport.annual_cost_chf",
+      "value": 860.00,
+      "source_doc": "synthetic_abonnement_mobilis_2024.pdf",
+      "source_page": 1,
+      "source_bbox": null,
+      "confidence": 1.0,
+      "extraction_method": "regex",
+      "model_name": null,
+      "extracted_at": "2025-01-15T10:00:05",
+      "confirmed_by_user": false
+    },
+    {
+      "canonical_field": "bank.year_end_balance_chf",
+      "value": 42000.00,
+      "source_doc": "synthetic_bank_year_end_2024.pdf",
+      "source_page": 1,
+      "source_bbox": null,
+      "confidence": 1.0,
+      "extraction_method": "regex",
+      "model_name": null,
+      "extracted_at": "2025-01-15T10:00:06",
+      "confirmed_by_user": false
+    },
+    {
+      "canonical_field": "bank.annual_interest_chf",
+      "value": 12.50,
+      "source_doc": "synthetic_bank_year_end_2024.pdf",
+      "source_page": 2,
+      "source_bbox": null,
+      "confidence": 0.7,
+      "extraction_method": "llm_structured",
+      "model_name": "azure:gpt-5-4-mini-extract",
+      "extracted_at": "2025-01-15T10:00:07",
+      "confirmed_by_user": false
+    }
+  ]
+}
