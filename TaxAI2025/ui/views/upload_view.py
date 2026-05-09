@@ -5,6 +5,8 @@ so the demo can run without real PDFs. For each upload, the user must
 click "Confirm document type" before the document type is treated as
 trusted.
 """
+from __future__ import annotations
+
 import os
 import tempfile
 from pathlib import Path
@@ -12,7 +14,33 @@ from typing import Any
 
 import flet as ft
 
-# ... rest of imports ...
+from TaxAI2025.core import config
+from TaxAI2025.core.documents import DocumentRecord
+from TaxAI2025.ui.components.footer import build_footer
+from TaxAI2025.ui.navigation import Navigator, Screen
+from TaxAI2025.ui.state import AppState
+
+
+_DOC_TYPE_LABELS: dict[str, str] = {
+    "salary_certificate": "Salary certificate (Certificat de salaire)",
+    "health_insurance_premium": "Health insurance premium (Prime d'assurance maladie)",
+    "daycare_invoice": "Daycare invoice (Facture de garde)",
+    "pillar_3a_certificate": "Pillar 3a certificate (Attestation 3e pilier A)",
+    "transport_pass": "Public transport subscription (Abonnement)",
+    "bank_year_end_statement": "Bank year-end statement (Relevé bancaire)",
+    "mortgage_interest_statement": "Mortgage interest statement (Intérêts hypothécaires)",
+    "alimony_paid_received": "Alimony statement (Pension alimentaire)",
+    "donation_receipt": "Donation receipt (Attestation de don)",
+    "parental_support_receipt": "Parental support receipt (Aide aux parents)",
+    "medical_bills_unreimbursed": "Unreimbursed medical bills (Frais médicaux)",
+    "education_invoice": "Education invoice (Frais de formation)",
+    "second_pillar_buyback_attestation": "Second-pillar buyback attestation (Rachat LPP)",
+    "foreign_income_attestation": "Foreign income attestation (Revenu étranger)",
+    "disability_proof": "Disability proof (Attestation invalidité)",
+    "unemployment_benefits_attestation": "Unemployment benefits attestation (Chômage)",
+    "unknown": "Unknown — needs your input",
+}
+
 
 def build_upload_view(
     state: AppState,
@@ -175,10 +203,8 @@ def build_upload_view(
             else:
                 render_error("Upload failed: File not found on server.")
 
-    file_picker = ft.FilePicker(
-        on_result=handle_upload_result,
-        on_upload_progress=handle_upload_progress,
-    )
+    file_picker = ft.FilePicker(on_result=handle_upload_result)
+    file_picker.on_upload_progress = handle_upload_progress
     page.overlay.append(file_picker)
 
     def pick_files(_e: Any) -> None:

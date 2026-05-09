@@ -94,3 +94,30 @@ def empty_env(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     yield
     importlib.reload(cfg)
     _clear_caches()
+
+
+@pytest.fixture(autouse=True)
+def _block_openai(monkeypatch):
+    """Robustly block all AI network calls by patching the SDK classes."""
+    import sys
+    from unittest.mock import MagicMock
+    
+    mock_instance = MagicMock()
+    # Mock both OpenAI and Groq patterns. Return a string for content to avoid regex failures.
+    mock_content = "Stubbed AI response [Vaud 2025 Instructions p.1]."
+    mock_instance.chat.completions.create.return_value.choices[0].message.content = mock_content
+    mock_instance.embeddings.create.return_value.data = [MagicMock(embedding=[0.1]*3072)]
+    
+    # Patch the constructors in the modules where they are imported
+    # We patch them in model_router specifically as that's our gateway
+    monkeypatch.setattr("TaxAI2025.ai.model_router._azure_client", lambda: mock_instance)
+    monkeypatch.setattr("TaxAI2025.ai.model_router._groq_client", lambda: mock_instance)
+    
+    # ONLY patch global SDKs if they are already in sys.modules to avoid 
+    # breaking "no-llm-import" tests that check sys.modules.
+    if "openai" in sys.modules:
+        import openai
+        monkeypatch.setattr(openai, "AzureOpenAI", MagicMock(return_value=mock_instance))
+    if "groq" in sys.modules:
+        import groq
+        monkeypatch.setattr(groq, "Groq", MagicMock(return_value=mock_instance))

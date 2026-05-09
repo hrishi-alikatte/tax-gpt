@@ -45,6 +45,9 @@ Thumbs.db
 dist/
 build/
 *.log
+node_modules/
+.firebase/
+uploads/
 
 # Claude Code worktrees (created locally; not part of source)
 .claude/worktrees/

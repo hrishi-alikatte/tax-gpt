@@ -34,9 +34,13 @@ def _patch_router(monkeypatch: pytest.MonkeyPatch, returned_text: str) -> list[s
         calls.append(returned_text)
         return returned_text
 
-    from TaxAI2025.ai import model_router
-
-    monkeypatch.setattr(model_router, "generate_text", fake_generate_text)
+    # Patch in both locations to be safe against import order issues
+    monkeypatch.setattr("TaxAI2025.ai.model_router.generate_text", fake_generate_text)
+    try:
+        import TaxAI2025.rag.explain
+        monkeypatch.setattr(TaxAI2025.rag.explain.model_router, "generate_text", fake_generate_text)
+    except (ImportError, AttributeError):
+        pass
     return calls
 
 
