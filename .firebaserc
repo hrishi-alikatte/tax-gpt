@@ -1,12 +1,12 @@
 {
   "projects": {
-    "default": "x-plateau-493313-s8"
+    "default": "vaudtaxai-prod"
   },
   "targets": {
-    "x-plateau-493313-s8": {
+    "vaudtaxai-prod": {
       "hosting": {
         "vaudtaxai": [
-          "x-plateau-493313-s8"
+          "vaudtaxai-prod"
         ]
       }
     }
