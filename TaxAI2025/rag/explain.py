@@ -204,6 +204,26 @@ def _refuse(reason: str, retrieval: RetrievalResult | None = None) -> GroundedAn
     )
 
 
+def _resolve_retriever(retriever: Retriever | None) -> Retriever:
+    """Pick the retriever for this call.
+
+    Order: explicit arg > production ChromaRetriever (if a compatible index
+    exists) > _NullRetriever (refusal). Tests inject explicit stubs and so
+    never load chromadb.
+    """
+    if retriever is not None:
+        return retriever
+    try:
+        from TaxAI2025.rag.retriever import get_default_retriever
+
+        real = get_default_retriever()
+        if real is not None:
+            return real
+    except Exception:  # noqa: BLE001 — index missing is the expected case
+        pass
+    return _NullRetriever()
+
+
 def answer_with_citations(
     question: str,
     retriever: Retriever | None = None,
@@ -211,7 +231,7 @@ def answer_with_citations(
     if _is_refusal_by_intent(question):
         return _refuse(reason="refusal_by_intent")
 
-    retr = retriever or _NullRetriever()
+    retr = _resolve_retriever(retriever)
     chunks = retr.retrieve(question, k=4)
     retrieval = RetrievalResult(chunks=list(chunks), query=question)
 

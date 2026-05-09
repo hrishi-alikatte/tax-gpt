@@ -46,8 +46,10 @@ The following must never be added to the corpus:
 
 ## 6. Chunking strategy
 
-- Loader: `pypdf.PdfReader` per page (preserves PDF page numbers).
-- Splitter: `RecursiveCharacterTextSplitter`, `chunk_size=800`, `chunk_overlap=150`, separators `["\n\n", "\n", "•", " ", ""]`.
+- Loader: `pypdf.PdfReader` per page (preserves PDF page numbers, 1-indexed).
+- Splitter: `RecursiveCharacterTextSplitter`, `chunk_size=1100`, `chunk_overlap=200`, separators `["\n\n", "\n", ". ", "•", " ", ""]`.
+- Rationale (vaud-tax-domain-analyst, 2026-05-09): Vaud rubrics + their explanations frequently exceed 800 chars; raising the size to 1100 keeps a `Code NNN` header glued to its body. Sentence-boundary separator (`". "`) preferred over arbitrary whitespace. Larger overlap survives boundary splits of code headings.
+- **`pdf_page is None` is a bug at ingest time.** The loader yields a 1-indexed page per chunk; any chunk written without it must be rejected. The `[..., page pending verification]` token is reserved for chunks added by future non-PDF loaders, not as a silent fallback for missing page numbers.
 - Each chunk inherits the page number of its origin page. Spanning chunks attach the **first** page they touch.
 - Section title is best-effort heuristic; if unknown, leave `None` (do not invent).
 - Vaud field codes (e.g. `Code 320`) and topic tags are populated by `vaud-tax-domain-analyst` post-ingest. Empty by default.
