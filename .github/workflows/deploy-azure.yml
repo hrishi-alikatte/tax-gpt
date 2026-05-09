@@ -1,0 +1,65 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  test-build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install -r requirements-cloudrun.txt
+          python -m pip install -e .
+
+      - name: Run tests
+        run: python -m pytest tests/ -q
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and Push API to ACR
+        run: |
+          az acr build --registry acrvaudtaxai --image vaudtaxai-api:${{ github.sha }} .
+
+      - name: Deploy API to Container Apps
+        run: |
+          az containerapp update \
+            --name aca-vaudtaxai-api \
+            --resource-group rg-vaudtaxai \
+            --image acrvaudtaxai.azurecr.io/vaudtaxai-api:${{ github.sha }}
+
+      - name: Build and Push UI to ACR
+        run: |
+          az acr build --registry acrvaudtaxai --image vaudtaxai-ui:${{ github.sha }} \
+            --build-arg VITE_API_BASE_URL=https://api.tax-gpt.online \
+            -f "Vaud Tax Guide/Dockerfile.ui" "Vaud Tax Guide"
+
+      - name: Deploy UI to Container Apps
+        run: |
+          az containerapp update \
+            --name aca-vaudtaxai-ui \
+            --resource-group rg-vaudtaxai \
+            --image acrvaudtaxai.azurecr.io/vaudtaxai-ui:${{ github.sha }}
