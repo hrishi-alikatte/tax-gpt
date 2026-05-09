@@ -33,29 +33,6 @@ jobs:
       - name: Run tests
         run: python -m pytest tests/ -q
 
-      - name: Verify Secrets
-        run: |
-          echo "Checking secret availability..."
-          if [ -n "${{ secrets.AZURE_CLIENT_ID }}" ]; then
-            echo "✅ AZURE_CLIENT_ID is present (Length: ${#CLIENT_ID})"
-          else
-            echo "❌ AZURE_CLIENT_ID IS MISSING"
-          fi
-          if [ -n "${{ secrets.AZURE_TENANT_ID }}" ]; then
-            echo "✅ AZURE_TENANT_ID is present (Length: ${#TENANT_ID})"
-          else
-            echo "❌ AZURE_TENANT_ID IS MISSING"
-          fi
-          if [ -n "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ]; then
-            echo "✅ AZURE_SUBSCRIPTION_ID is present (Length: ${#SUBS_ID})"
-          else
-            echo "❌ AZURE_SUBSCRIPTION_ID IS MISSING"
-          fi
-        env:
-          CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          SUBS_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
       - name: Azure Login
         uses: azure/login@v2
         with:
