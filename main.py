@@ -13,6 +13,13 @@ import flet as ft
 
 sys.path.append(os.getcwd())
 
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
 from TaxAI2025.core import config
 from TaxAI2025.ui.components.footer import DISCLAIMER_TEXT
 from TaxAI2025.ui.navigation import (
