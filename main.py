@@ -9,7 +9,12 @@ from __future__ import annotations
 import os
 
 import flet as ft
-import flet.fastapi as flet_fastapi
+
+try:
+    import flet.fastapi as flet_fastapi
+except ImportError:
+    flet_fastapi = None
+
 import uvicorn
 
 try:
@@ -224,14 +229,36 @@ def main(page: ft.Page) -> None:
         print("Live mode — extraction and RAG will hit the configured providers.")
 
 
+def cloud_run_port() -> int | None:
+    """Return the port from the environment if running in Cloud Run."""
+    raw = os.environ.get("PORT")
+    return int(raw) if raw else None
+
+
+def app_run_kwargs() -> dict[str, Any]:
+    """Return the kwargs for ft.app() or uvicorn.run()."""
+    port = cloud_run_port()
+    if port:
+        return {
+            "target": main,
+            "host": "0.0.0.0",
+            "port": port,
+            "view": ft.AppView.WEB_BROWSER,
+        }
+    return {"target": main}
+
+
 # Cloud Run / Web App entrypoint using FastAPI adapter for Flet
-app = flet_fastapi.app(main, upload_dir="uploads")
+if flet_fastapi:
+    app = flet_fastapi.app(main, upload_dir="uploads")
+else:
+    app = None
 
 if __name__ == "__main__":
-    # If PORT is set, we are in Cloud Run web mode
-    port = int(os.environ.get("PORT", "8080"))
-    if "PORT" in os.environ:
-        uvicorn.run(app, host="0.0.0.0", port=port)
+    kwargs = app_run_kwargs()
+    if "PORT" in os.environ and app:
+        # For Cloud Run, we use uvicorn to run the FastAPI app
+        uvicorn.run(app, host=kwargs["host"], port=kwargs["port"], proxy_headers=True, forwarded_allow_ips="*")
     else:
         # Local desktop mode
-        ft.app(target=main)
+        ft.app(**kwargs)

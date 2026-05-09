@@ -105,7 +105,7 @@ def test_expanded_registry_is_16_known_types_plus_unknown() -> None:
 
 def test_document_type_registry_stays_aligned() -> None:
     from TaxAI2025.extraction import classify, extract
-    from TaxAI2025.ui.state import REQUIRED_FIELDS_BY_DOC_TYPE
+    from TaxAI2025.ui.state import AppState, REQUIRED_FIELDS_BY_DOC_TYPE
     from TaxAI2025.ui.views.upload_view import _DOC_TYPE_LABELS
 
     known = set(KNOWN_DOCUMENT_TYPES)

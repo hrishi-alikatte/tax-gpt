@@ -4,6 +4,8 @@ from __future__ import annotations
 import importlib
 from pathlib import Path
 
+from TaxAI2025.ui.state import AppState
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
