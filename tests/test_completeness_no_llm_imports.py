@@ -79,7 +79,7 @@ def test_evaluate_does_not_load_model_router() -> None:
         children_count=0,
         commune_of_residence="Lausanne",
         work_commune="Lausanne",
-        tax_year=2024,
+        tax_year=2025,
         has_workplace_canteen=True,
     )
     fact = TaxFact(

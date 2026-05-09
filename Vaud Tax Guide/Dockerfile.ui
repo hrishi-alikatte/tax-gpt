@@ -1,0 +1,20 @@
+FROM oven/bun:1.1 AS base
+
+WORKDIR /app
+
+COPY package.json bun.lock ./
+RUN bun install
+
+COPY . .
+
+# Set the production API URL as a build-time variable
+ARG VITE_API_BASE_URL=https://vaudtaxai-web-410743045655.europe-west6.run.app
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
+RUN bun run build
+
+EXPOSE 3000
+
+# TanStack Start build typically outputs a server entry.
+# We need to run the server.
+CMD ["bun", "dist/server/index.js"]

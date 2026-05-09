@@ -2,7 +2,7 @@
 
 > Canonical Vaud tax schema for **employed C-permit residents in Canton Vaud**, with English ↔ French ↔ VaudTax-code mapping and the open-questions log.
 >
-> **DRAFT** — every entry must be validated against `TaxAI2025/Instructions_generales_2024.pdf` by `vaud-tax-domain-analyst` before being marked `vaud_official`. Page references with `?` are unverified.
+> **DRAFT** — every entry must be validated against `TaxAI2025/Instructions_generales_2025.pdf` by `vaud-tax-domain-analyst` before being marked `vaud_official`. Page references with `?` are unverified.
 
 ---
 
@@ -12,7 +12,7 @@
 - **Permit:** C only (settled residents).
 - **Employment:** salaried employees only. No self-employed, no contractors, no business owners.
 - **Residence:** Vaud-resident the full tax year.
-- **Tax year (MVP):** 2024.
+- **Tax year (MVP):** 2025.
 - **Filing system:** VaudTax.
 
 Any concept outside this fence is **out of scope** — flag and stop.
@@ -32,7 +32,7 @@ Any concept outside this fence is **out of scope** — flag and stop.
 | `commune_of_residence`   | str                                 | yes      | must be in Vaud                               |
 | `employer_name`          | str \| None                         | yes      |                                               |
 | `work_commune`           | str \| None                         | yes      | drives commute deduction rule                 |
-| `tax_year`               | int                                 | yes      | 2024 for MVP                                  |
+| `tax_year`               | int                                 | yes      | 2025 for MVP                                  |
 | `has_workplace_canteen`  | bool \| None                        | optional | short-circuits `VD-MEAL-001` when `True`. Added M4 to keep the demo-spec finding count at three (Sarah is `True`). |
 
 ---

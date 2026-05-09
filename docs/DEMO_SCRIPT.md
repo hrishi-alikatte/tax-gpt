@@ -13,7 +13,7 @@
 - 1 child, **Lina**, age 4, in daycare.
 - Resides in **Lausanne**, works in **Renens**.
 - Salaried at a synthetic company "Aurelius SA" as a software engineer.
-- Tax year **2024**.
+- Tax year **2025**.
 
 > Sarah's situation is engineered to trigger exactly **three** completeness findings: childcare deduction not yet provided, pillar 3a not yet provided, transport / commute not yet provided.
 
@@ -21,9 +21,9 @@
 
 ## Synthetic documents (committed under `demo/scenarios/expat_c_permit_basic/docs/`)
 
-1. `salary_certificate_sarah_2024.pdf` — Certificat de salaire showing gross 110'000 CHF, net 92'000 CHF, pension contributions, etc.
-2. `health_insurance_assura_2024.pdf` — annual premium 4'200 CHF, insured: Sarah + Lina.
-3. `bank_yearend_2024.pdf` — UBS year-end statement, balance 18'400 CHF, interest 12 CHF.
+1. `salary_certificate_sarah_2025.pdf` — Certificat de salaire showing gross 110'000 CHF, net 92'000 CHF, pension contributions, etc.
+2. `health_insurance_assura_2025.pdf` — annual premium 4'200 CHF, insured: Sarah + Lina.
+3. `bank_yearend_2025.pdf` — UBS year-end statement, balance 18'400 CHF, interest 12 CHF.
 
 > Note: childcare invoice, pillar 3a, and transport pass are deliberately **omitted** — that is what the completeness engine surfaces.
 
@@ -42,7 +42,7 @@
 
 ### 1:15 — Upload screen (60s)
 
-- Drag in `salary_certificate_sarah_2024.pdf`.
+- Drag in `salary_certificate_sarah_2025.pdf`.
 - Classifier shows: *"This looks like a Certificat de salaire. Confirm?"*
 - Confirm. Repeat for the health insurance PDF and bank statement.
 
@@ -65,7 +65,7 @@ Narrate: *"None of these were in Sarah's documents. Each is grounded in a specif
 ### 4:45 — Mapping + Explain (15s — kept short)
 
 - Show mapping table briefly (English ↔ French ↔ VaudTax code).
-- Ask the explain panel: *"What is the cap on pillar 3a contributions for an employed person in 2024?"*
+- Ask the explain panel: *"What is the cap on pillar 3a contributions for an employed person in 2025?"*
 - Answer renders with `[Vaud Instructions p.X]` inline citation.
 
 ---

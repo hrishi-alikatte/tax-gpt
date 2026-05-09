@@ -2,8 +2,8 @@
   "_disclaimer": "Synthetic data only.",
   "document": {
     "doc_id": "alex-doc-001",
-    "filename": "synthetic_certificat_de_salaire_alex_2024.pdf",
-    "file_path": "<replay>/synthetic_certificat_de_salaire_alex_2024.pdf",
+    "filename": "synthetic_certificat_de_salaire_alex_2025.pdf",
+    "file_path": "<replay>/synthetic_certificat_de_salaire_alex_2025.pdf",
     "document_type": "salary_certificate",
     "classifier_confidence": 0.95,
     "classifier_method": "heuristic",
@@ -14,7 +14,7 @@
     {
       "canonical_field": "salary.gross_annual_chf",
       "value": 95000.00,
-      "source_doc": "synthetic_certificat_de_salaire_alex_2024.pdf",
+      "source_doc": "synthetic_certificat_de_salaire_alex_2025.pdf",
       "source_page": 1,
       "source_bbox": null,
       "confidence": 1.0,
@@ -26,7 +26,7 @@
     {
       "canonical_field": "salary.net_annual_chf",
       "value": 80000.00,
-      "source_doc": "synthetic_certificat_de_salaire_alex_2024.pdf",
+      "source_doc": "synthetic_certificat_de_salaire_alex_2025.pdf",
       "source_page": 1,
       "source_bbox": null,
       "confidence": 1.0,
@@ -38,7 +38,7 @@
     {
       "canonical_field": "health_insurance.annual_premium_chf",
       "value": 4500.00,
-      "source_doc": "synthetic_helsana_alex_2024.pdf",
+      "source_doc": "synthetic_helsana_alex_2025.pdf",
       "source_page": 1,
       "source_bbox": null,
       "confidence": 1.0,
@@ -50,7 +50,7 @@
     {
       "canonical_field": "bank.year_end_balance_chf",
       "value": 22500.00,
-      "source_doc": "synthetic_bank_alex_2024.pdf",
+      "source_doc": "synthetic_bank_alex_2025.pdf",
       "source_page": 1,
       "source_bbox": null,
       "confidence": 1.0,

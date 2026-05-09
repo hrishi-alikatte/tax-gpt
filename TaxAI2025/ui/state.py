@@ -57,7 +57,7 @@ class UserProfile(BaseModel):
     commune_of_residence: str | None = None
     employer_name: str | None = None
     work_commune: str | None = None
-    tax_year: int = 2024
+    tax_year: int = 2025
     has_workplace_canteen: bool | None = None
 
 

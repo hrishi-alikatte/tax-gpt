@@ -27,7 +27,7 @@ def test_regex_stage_extracts_salary_gross_with_full_provenance(
     pages = [
         PageText(
             pdf_page=1,
-            text="CERTIFICAT DE SALAIRE 2024\nSalaire brut annuel CHF 120'000.00\nSalaire net annuel CHF 96'000.00",
+            text="CERTIFICAT DE SALAIRE 2025\nSalaire brut annuel CHF 120'000.00\nSalaire net annuel CHF 96'000.00",
         )
     ]
 
@@ -61,7 +61,7 @@ def test_extractor_never_returns_confirmed_facts(
     pages = [
         PageText(
             pdf_page=1,
-            text="Solde au 31 décembre 2024: CHF 42'000.00\nIntérêts perçus: 12.50",
+            text="Solde au 31 décembre 2025: CHF 42'000.00\nIntérêts perçus: 12.50",
         )
     ]
     from TaxAI2025.ai import model_router

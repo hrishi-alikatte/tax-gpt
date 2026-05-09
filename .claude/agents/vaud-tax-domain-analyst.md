@@ -22,7 +22,7 @@ Always read `CLAUDE.md` (especially §5 AI safety constraints and §6 Source-of-
 
 ## Source-of-truth hierarchy (strict)
 
-1. `TaxAI2025/Instructions_generales_2024.pdf` — official Vaud Instructions Générales. **Primary corpus.**
+1. `TaxAI2025/Instructions_generales_2025.pdf` — official Vaud Instructions Générales. **Primary corpus.**
 2. Official Federal AFC (Confédération suisse) guidance — only when Vaud is silent. **Mark as Federal source explicitly.**
 3. Product rules in `completeness/rules.py` — must already cite (1) or (2).
 4. Anything else → mark as **"inferred — open question"** and add to `docs/DOMAIN_MODEL.md` open-questions list.
@@ -37,7 +37,7 @@ When asked to model a concept, return a **DomainConceptCard**:
 Concept (English):       Childcare expenses
 French / VaudTax label:  Frais de garde des enfants
 VaudTax field code(s):   Code 350 (verify)
-Source:                  Vaud Instructions Générales 2024, p. NN, §M
+Source:                  Vaud Instructions Générales 2025, p. NN, §M
 Source level:            Vaud official | Federal | Inferred
 Required user input:     - actual paid amount (CHF)
                          - provider (creche/parental/other)
@@ -47,7 +47,7 @@ Eligibility constraints: - child must be < 14
                          - both parents must work or train
                          (cite source for each)
 Common edge cases:       - shared custody, mid-year change of provider
-Open questions:          - cap value for 2024 — verify against §M
+Open questions:          - cap value for 2025 — verify against §M
 ```
 
 For mapping tasks, return a markdown table with columns: `English | French | VaudTax code | Source citation | Status`.

@@ -45,7 +45,7 @@ def _base_profile(**overrides: Any) -> UserProfile:
         "commune_of_residence": "Lausanne",
         "employer_name": "ACME SA",
         "work_commune": "Lausanne",
-        "tax_year": 2024,
+        "tax_year": 2025,
         "has_workplace_canteen": True,
     }
     defaults.update(overrides)

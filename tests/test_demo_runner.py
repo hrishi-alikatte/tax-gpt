@@ -61,7 +61,7 @@ def test_runner_exits_one_when_expected_diverges(
                 "commune_of_residence": "Lausanne",
                 "employer_name": "ACME",
                 "work_commune": "Renens",
-                "tax_year": 2024,
+                "tax_year": 2025,
                 "has_workplace_canteen": True,
             }
         ),

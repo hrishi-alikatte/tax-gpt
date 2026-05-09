@@ -56,12 +56,12 @@ def create_bank_statement(filename, name):
     c.drawString(50, height - 100, f"Titulaire: {name}")
     c.drawString(50, height - 120, "Compte: 12-345678-9")
     
-    c.drawString(50, height - 160, "Solde au 31.12.2024:")
+    c.drawString(50, height - 160, "Solde au 31.12.2025:")
     c.setFont("Helvetica-Bold", 12)
     c.drawString(300, height - 160, "CHF 52'450.00")
     
     c.setFont("Helvetica", 12)
-    c.drawString(50, height - 180, "Intérêts annuels 2024:")
+    c.drawString(50, height - 180, "Intérêts annuels 2025:")
     c.drawString(300, height - 180, "CHF 125.40")
 
     # Childcare/Education
@@ -70,7 +70,7 @@ def create_bank_statement(filename, name):
     c.setFont("Helvetica", 12)
     c.drawString(50, height - 270, "Garderie 'Les Petits Amis' - Lausanne")
     c.drawString(50, height - 290, "Enfant: Bébé Hrishi (2 ans)")
-    c.drawString(50, height - 310, "Montant payé en 2024:")
+    c.drawString(50, height - 310, "Montant payé en 2025:")
     c.drawString(300, height - 310, "CHF 12'000.00")
 
     c.save()

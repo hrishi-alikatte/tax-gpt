@@ -21,14 +21,14 @@ def _disable_pdfplumber(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.mark.parametrize(
     "filename, expected_type",
     [
-        ("certificat_de_salaire_2024.pdf", "salary_certificate"),
-        ("Lohnausweis_2024.pdf", "salary_certificate"),
-        ("krankenkasse_premium_2024.pdf", "health_invariant"),  # placeholder, replaced below
-        ("Prime_assurance_maladie_2024.pdf", "health_insurance_premium"),
+        ("certificat_de_salaire_2025.pdf", "salary_certificate"),
+        ("Lohnausweis_2025.pdf", "salary_certificate"),
+        ("krankenkasse_premium_2025.pdf", "health_invariant"),  # placeholder, replaced below
+        ("Prime_assurance_maladie_2025.pdf", "health_insurance_premium"),
         ("creche_facture_juin.pdf", "daycare_invoice"),
-        ("attestation_3a_2024.pdf", "pillar_3a_certificate"),
-        ("abonnement_mobilis_2024.pdf", "transport_pass"),
-        ("ubs_releve_fin_annee_2024.pdf", "bank_year_end_statement"),
+        ("attestation_3a_2025.pdf", "pillar_3a_certificate"),
+        ("abonnement_mobilis_2025.pdf", "transport_pass"),
+        ("ubs_releve_fin_annee_2025.pdf", "bank_year_end_statement"),
     ],
 )
 def test_filename_heuristic_resolves_known_types(
@@ -135,7 +135,7 @@ def test_header_keyword_match_used_when_filename_misses(
     monkeypatch.setattr(
         classify,
         "_read_first_page_text",
-        lambda p: "CERTIFICAT DE SALAIRE 2024  ACME SA",
+        lambda p: "CERTIFICAT DE SALAIRE 2025  ACME SA",
     )
     monkeypatch.setattr(classify, "_safe_page_count", lambda p: 1)
 

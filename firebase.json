@@ -9,9 +9,16 @@
     ],
     "rewrites": [
       {
-        "source": "**",
+        "source": "/api/**",
         "run": {
           "serviceId": "vaudtaxai-web",
+          "region": "europe-west6"
+        }
+      },
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "vaudtaxai-ui",
           "region": "europe-west6"
         }
       }
