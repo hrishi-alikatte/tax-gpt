@@ -50,6 +50,13 @@ def test_screen_string_values_match_literals() -> None:
     assert Screen.INTAKE.value == "intake"
     assert Screen.UPLOAD.value == "upload"
     assert Screen.EXTRACTED.value == "extracted"
+    assert Screen.INTERVIEW.value == "interview"
     assert Screen.COMPLETENESS.value == "completeness"
     assert Screen.MAPPING.value == "mapping"
     assert Screen.EXPLAIN.value == "explain"
+
+
+def test_extracted_values_continue_to_interview_not_mapping() -> None:
+    from TaxAI2025.ui.views.extracted_view import NEXT_AFTER_EXTRACTION
+
+    assert NEXT_AFTER_EXTRACTION is Screen.INTERVIEW

@@ -1,0 +1,21 @@
+{
+  "_disclaimer": "Synthetic data only.",
+  "document": {
+    "doc_id": "demo-doc-med-edu",
+    "filename": "synthetic_salary_medical_education.pdf",
+    "file_path": "<replay>/synthetic_salary_medical_education.pdf",
+    "document_type": "salary_certificate",
+    "classifier_confidence": 0.95,
+    "classifier_method": "heuristic",
+    "pdf_page_count": 1
+  },
+  "facts": [
+    {"canonical_field": "salary.gross_annual_chf", "value": 88000.0, "source_doc": "salary_med_edu.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "salary.net_annual_chf", "value": 71500.0, "source_doc": "salary_med_edu.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "health_insurance.annual_premium_chf", "value": 4050.0, "source_doc": "insurance_med_edu.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "bank.year_end_balance_chf", "value": 16400.0, "source_doc": "bank_med_edu.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "pillar_3a.annual_contribution_chf", "value": 5000.0, "source_doc": "pillar3a_med_edu.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "medical.unreimbursed_chf", "value": 1850.0, "source_doc": "medical_bills_med_edu.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "education.tuition_paid_chf", "value": 3200.0, "source_doc": "education_invoice_med_edu.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false}
+  ]
+}

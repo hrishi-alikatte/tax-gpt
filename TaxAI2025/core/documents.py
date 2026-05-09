@@ -1,8 +1,8 @@
 """DocumentRecord + DocumentType for the extraction pipeline.
 
-The 6 MVP types come from `docs/DOMAIN_MODEL.md` §3. `unknown` is a
-sentinel reserved for the case where neither heuristics nor LLM fallback
-can decide. Downstream rules treat `unknown` as "ask the user".
+Known types come from `docs/DOMAIN_MODEL.md` §3. `unknown` is a sentinel
+reserved for the case where neither heuristics nor LLM fallback can decide.
+Downstream rules treat `unknown` as "ask the user".
 """
 from __future__ import annotations
 
@@ -19,6 +19,16 @@ DocumentType = Literal[
     "pillar_3a_certificate",
     "transport_pass",
     "bank_year_end_statement",
+    "mortgage_interest_statement",
+    "alimony_paid_received",
+    "donation_receipt",
+    "parental_support_receipt",
+    "medical_bills_unreimbursed",
+    "education_invoice",
+    "second_pillar_buyback_attestation",
+    "foreign_income_attestation",
+    "disability_proof",
+    "unemployment_benefits_attestation",
     "unknown",
 ]
 
@@ -30,6 +40,16 @@ KNOWN_DOCUMENT_TYPES: tuple[DocumentType, ...] = (
     "pillar_3a_certificate",
     "transport_pass",
     "bank_year_end_statement",
+    "mortgage_interest_statement",
+    "alimony_paid_received",
+    "donation_receipt",
+    "parental_support_receipt",
+    "medical_bills_unreimbursed",
+    "education_invoice",
+    "second_pillar_buyback_attestation",
+    "foreign_income_attestation",
+    "disability_proof",
+    "unemployment_benefits_attestation",
 )
 
 

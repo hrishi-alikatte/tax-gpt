@@ -17,6 +17,7 @@ import json
 from typing import Any, Iterable, Literal, Sequence
 
 from TaxAI2025.core import config
+from TaxAI2025.persistence import token_budget
 
 Purpose = Literal[
     "rag_explanation",
@@ -102,6 +103,8 @@ def generate_text(
     temperature: float = 0.0,
 ) -> str:
     routing = route(purpose)
+    token_budget.assert_budget_available(purpose)
+    input_chars = sum(len(m.get("content", "")) for m in messages)
     if routing["provider"] == "azure":
         client = _azure_client()
         resp = client.chat.completions.create(
@@ -109,7 +112,11 @@ def generate_text(
             messages=list(messages),
             temperature=temperature,
         )
-        return _extract_text_from_chat(resp)
+        text = _extract_text_from_chat(resp)
+        token_budget.record_model_call(
+            purpose, input_chars=input_chars, output_chars=len(text)
+        )
+        return text
     if routing["provider"] == "groq":
         client = _groq_client()
         resp = client.chat.completions.create(
@@ -117,7 +124,11 @@ def generate_text(
             messages=list(messages),
             temperature=temperature,
         )
-        return _extract_text_from_chat(resp)
+        text = _extract_text_from_chat(resp)
+        token_budget.record_model_call(
+            purpose, input_chars=input_chars, output_chars=len(text)
+        )
+        return text
     raise RuntimeError(f"Unhandled provider: {routing['provider']}")
 
 
@@ -138,6 +149,8 @@ def generate_json(
     (looser; caller validates).
     """
     routing = route(purpose)
+    token_budget.assert_budget_available(purpose)
+    input_chars = sum(len(m.get("content", "")) for m in messages)
     if routing["provider"] == "azure":
         client = _azure_client()
         resp = client.chat.completions.create(
@@ -154,6 +167,9 @@ def generate_json(
             },
         )
         text = _extract_text_from_chat(resp)
+        token_budget.record_model_call(
+            purpose, input_chars=input_chars, output_chars=len(text)
+        )
         return json.loads(text)
     if routing["provider"] == "groq":
         client = _groq_client()
@@ -163,7 +179,11 @@ def generate_json(
             temperature=temperature,
             response_format={"type": "json_object"},
         )
-        return json.loads(_extract_text_from_chat(resp))
+        text = _extract_text_from_chat(resp)
+        token_budget.record_model_call(
+            purpose, input_chars=input_chars, output_chars=len(text)
+        )
+        return json.loads(text)
     raise RuntimeError(f"Unhandled provider: {routing['provider']}")
 
 
@@ -172,11 +192,18 @@ def generate_json(
 # ---------------------------------------------------------------------------
 
 def embed_texts(texts: Iterable[str]) -> list[list[float]]:
+    token_budget.assert_budget_available("rag_explanation")
+    text_list = list(texts)
     cfg = config.azure_config()
     client = _azure_client()
     resp = client.embeddings.create(
         model=cfg.embedding_deployment,
-        input=list(texts),
+        input=text_list,
+    )
+    token_budget.record_model_call(
+        "rag_explanation",
+        input_chars=sum(len(t) for t in text_list),
+        output_chars=0,
     )
     return [item.embedding for item in resp.data]
 

@@ -37,7 +37,7 @@ Any concept outside this fence is **out of scope** — flag and stop.
 
 ---
 
-## 3. Canonical document types (MVP)
+## 3. Canonical document types
 
 | `DocumentType`               | English label                | French label                  | Primary fields extracted                                            |
 | ---------------------------- | ---------------------------- | ----------------------------- | ------------------------------------------------------------------- |
@@ -47,6 +47,16 @@ Any concept outside this fence is **out of scope** — flag and stop.
 | `pillar_3a_certificate`      | Pillar 3a certificate        | Attestation 3e pilier A       | annual contribution, institution, account                           |
 | `transport_pass`             | Public transport subscription| Abonnement de transport       | annual cost, route                                                  |
 | `bank_year_end_statement`    | Bank year-end statement      | Relevé bancaire de fin d'année| account balance 31-Dec, interest income                             |
+| `mortgage_interest_statement`| Mortgage interest statement  | Attestation d'intérêts hypothécaires | annual mortgage interest                                      |
+| `alimony_paid_received`      | Alimony statement            | Pension alimentaire / contribution d'entretien | alimony paid                                      |
+| `donation_receipt`           | Donation receipt             | Attestation de don            | total donations paid                                                |
+| `parental_support_receipt`   | Parental support receipt     | Aide aux parents / personne à charge | support paid                                                  |
+| `medical_bills_unreimbursed` | Unreimbursed medical bills   | Frais médicaux non remboursés | unreimbursed medical/dental costs                                   |
+| `education_invoice`          | Education invoice            | Frais de formation / perfectionnement | tuition/training paid                                        |
+| `second_pillar_buyback_attestation` | Second-pillar buyback attestation | Attestation de rachat LPP | second-pillar buyback paid                                  |
+| `foreign_income_attestation` | Foreign income attestation   | Attestation de revenu étranger | gross foreign income                                               |
+| `disability_proof`           | Disability proof             | Attestation invalidité / rente AI | disability acknowledgement                                      |
+| `unemployment_benefits_attestation` | Unemployment benefits attestation | Attestation chômage | unemployment benefits received                                  |
 
 ---
 
@@ -70,6 +80,17 @@ heading on the rule's home page — see §7 open questions.
 | `meal_allowance.method`              | Literal["canteen","none"]| Meal allowance method  | Frais de repas                        | **Code 150** [verified vd_2025 p.21, p.22] |
 | `bank.year_end_balance_chf`          | Decimal | Bank balance 31 December            | Solde bancaire au 31 décembre         | **Code 410** [verified vd_2025 p.32; previous guess Code 800 was wrong — Code 800 = REVENU IMPOSABLE per p.51] |
 | `bank.annual_interest_chf`           | Decimal | Interest income                     | Intérêts perçus                       | **Code 410** [verified vd_2025 p.32: "REVENU ET FORTUNE DE TITRES"; previous guess Code 810 was wrong — Code 810 = family situation per p.47] |
+| `mortgage.annual_interest_chf`       | Decimal | Mortgage interest                   | Intérêts hypothécaires                | Code pending — Phase B verification |
+| `alimony.paid_chf`                   | Decimal | Alimony paid                        | Pension alimentaire versée            | **Code 630** [verified vd_2025 p.42: "PENSIONS ALIMENTAIRES VERSÉES CODE 630"] |
+| `donations.total_chf`                | Decimal | Donations paid                      | Dons / versements                     | **Code 720** [verified vd_2025 p.49: "DONS À DES INSTITUTIONS D'UTILITÉ PUBLIQUE CODE 720"; previous Phase B preview guess Code 620 was wrong for general donations] |
+| `parental_support.paid_chf`          | Decimal | Support paid to parents/dependents  | Personne à charge / aide aux parents  | Code pending — Vaud social-deduction/dependent-person wording still needs a precise source pass |
+| `medical.unreimbursed_chf`           | Decimal | Unreimbursed medical costs          | Frais médicaux non remboursés         | Code pending — Phase B verification |
+| `education.tuition_paid_chf`         | Decimal | Education / training fees paid      | Frais de formation / perfectionnement | **Code 618** [verified vd_2025 p.42: "FRAIS DE FORMATION, DE PERFECTIONNEMENT ET DE RECONVERSION CODE 618"] |
+| `pillar2.buyback_chf`                | Decimal | Second-pillar buyback               | Rachat d'années d'assurance LPP       | **Code 320** [verified vd_2025 p.31] |
+| `real_estate.maintenance_chf`        | Decimal | Real-estate maintenance costs       | Frais d'entretien d'immeubles         | **Code 540** [verified vd_2025 p.40: "FRAIS D'ENTRETIEN D'IMMEUBLES CODE 540"; details refer to the Vaud property instructions] |
+| `foreign_income.gross_chf`           | Decimal | Gross foreign income                | Revenu étranger brut                  | Code pending — Phase B verification |
+| `disability.acknowledged`            | Boolean | Disability proof acknowledged       | Attestation invalidité / rente AI     | Code pending — Phase B verification |
+| `unemployment.benefits_chf`          | Decimal | Unemployment benefits               | Indemnités de chômage                 | Code pending — Phase B verification |
 
 ---
 
@@ -99,6 +120,12 @@ Each rule lives in `TaxAI2025/completeness/rules.py` and ships with a
   `[Vaud 2025 Instructions, page pending verification]`.
 - `inferred` — reserved for federal-fallback or non-Vaud rules; must
   carry a §7 open-questions entry. Currently unused.
+
+**User-facing rule policy (Phase B hardening):** the Completeness screen and
+default `evaluate()` path show only `vaud_official` rules. `pending` and
+`inferred` checks belong in the Adaptive Interview as proactive questions until
+their sources and trigger logic are verified. Tests may call
+`evaluate(..., include_unverified=True)` to keep the pending registry auditable.
 
 All six initial rules pinned 2026-05-09 by `vaud-tax-domain-analyst`
 against `data/official/vd_2025.pdf`.
@@ -135,7 +162,9 @@ A rule cannot be promoted from `pending` to `vaud_official` without:
 - [x] ~~**VaudTax code for childcare**~~ Resolved 2026-05-09 → **Code 670** (vd_2025 p.44).
 - [x] ~~**VaudTax code for pillar 3a contribution**~~ Resolved 2026-05-09 → **Code 310** (vd_2025 p.30: PRÉVOYANCE INDIVIDUELLE LIÉE 3 EME PILIER A (OPP3) CODE 310).
 - [x] ~~**VaudTax code for transport / commute**~~ Resolved 2026-05-09 → **Code 140** (vd_2025 p.18).
-- [ ] **Phase B Vaud codes (preview)** harvested in the same PDF read for the planned interview-question registry: Code 105 (secondary activity), 110 (non-employer allowances), 120 (company directors), 165 (secondary activity flat-rate), 195 (other revenues), 250 (2nd pillar pensions), 270 (annuity contracts), 330 (self-employed pension contributions), 540 (real estate maintenance), 618 (formation/perfectionnement), 620 (party donations / charges durables), 630 (alimony paid), 640 (AVS/AI/APG/AC for non-active), 650 (rent/rental value), 660 (social housing), 680 (dependent person), 690 (number of dependent persons), 800 (taxable income), 810 (family situation parts). All to be cited in the Phase B interview registry — verification pass per code still required before each entry ships.
+- [x] ~~**Phase B first source-verification batch**~~ Done 2026-05-09 → Code 320 (2nd-pillar buyback, p.31), Code 540 (real-estate maintenance, p.40), Code 618 (formation/perfectionnement, p.42), Code 630 (alimony paid, p.42), Code 720 (eligible public-interest donations, p.49). These concepts are source-verified for Interview prompts; broad Completeness checks remain `pending` until their triggers are specific enough to be user-facing findings.
+- [ ] **Dependent-support / person-in-need source split** — Vaud p.65 lists a social deduction for a person in need, but the exact canonical fact, code, eligibility wording, and whether this should model support paid or household/dependent status still need a dedicated source pass before promotion.
+- [ ] **Phase B Vaud codes (remaining preview)** harvested in the same PDF read for the planned interview-question registry: Code 105 (secondary activity), 110 (non-employer allowances), 120 (company directors), 165 (secondary activity flat-rate), 195 (other revenues), 250 (2nd pillar pensions), 270 (annuity contracts), 330 (self-employed pension contributions), 620 (party payments / charges durables), 640 (AVS/AI/APG/AC for non-active), 650 (rent/rental value), 660 (social housing), 680/690 (dependent-person social deduction), 710 (medical/dental and disability costs), 800 (taxable income), 810 (family situation parts). All to be cited in the Phase B interview registry — verification pass per code still required before each entry ships.
 - [ ] **Confirm pillar 3a married-couple cap CHF 9'900 attribution** — the figure surfaced on p.30 in the pillar 3a query but the textual context sits inside the CODE 300 insurance section. Risk: cap is for insurance-premium deduction, not pillar 3a. Resolve before any rule cites this figure.
 - [ ] Childcare deduction cap for 2025 — does Vaud follow Federal cap or have its own?
 - [ ] Transport deduction: kilometric vs actual public-transport-only — what does Vaud accept for 2025?

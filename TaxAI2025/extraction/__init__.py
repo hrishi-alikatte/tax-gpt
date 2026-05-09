@@ -18,6 +18,7 @@ from pathlib import Path
 from TaxAI2025.core import config
 from TaxAI2025.core.documents import DocumentRecord, DocumentType, KNOWN_DOCUMENT_TYPES
 from TaxAI2025.core.tax_facts import TaxFact, validate_provenance
+from TaxAI2025.extraction.generic import GenericFact
 
 
 def extract_from_upload(file_path: Path | str) -> tuple[DocumentRecord, list[TaxFact]]:
@@ -49,6 +50,7 @@ def extract_from_upload(file_path: Path | str) -> tuple[DocumentRecord, list[Tax
 __all__ = [
     "DocumentRecord",
     "DocumentType",
+    "GenericFact",
     "KNOWN_DOCUMENT_TYPES",
     "TaxFact",
     "extract_from_upload",

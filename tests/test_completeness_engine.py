@@ -1,10 +1,4 @@
-"""Engine behavior + the canonical demo-gate test.
-
-The demo punchline: with Sarah's profile + the 5 confirmed facts, the
-engine produces exactly three findings — VD-CHILDCARE-001,
-VD-PILLAR3A-001, VD-COMMUTE-001. Anything else fails this test and
-breaks the demo.
-"""
+"""Engine behavior + the canonical demo-gate test."""
 from __future__ import annotations
 
 import json
@@ -142,7 +136,12 @@ def test_evaluate_sorts_by_severity_then_rule_id() -> None:
         severity="blocker",
         verification_status="pending",
     )
-    findings = evaluate(_profile(), [], rules=[rule_a, rule_b, rule_c, rule_d])
+    findings = evaluate(
+        _profile(),
+        [],
+        rules=[rule_a, rule_b, rule_c, rule_d],
+        include_unverified=True,
+    )
     ranks = [SEVERITY_RANK[f.severity] for f in findings]
     assert ranks == sorted(ranks)
     assert [f.rule_id for f in findings] == [
@@ -178,8 +177,23 @@ def test_evaluate_skips_rules_whose_trigger_returns_false() -> None:
         severity="blocker",
         verification_status="pending",
     )
-    findings = evaluate(_profile(), [], rules=[rule_off, rule_on])
+    findings = evaluate(
+        _profile(),
+        [],
+        rules=[rule_off, rule_on],
+        include_unverified=True,
+    )
     assert [f.rule_id for f in findings] == ["VD-ON-001"]
+
+
+def test_evaluate_default_excludes_pending_and_inferred_rules() -> None:
+    profile = _profile(employer_name="ACME SA")
+    default_ids = {f.rule_id for f in evaluate(profile, [])}
+    all_ids = {f.rule_id for f in evaluate(profile, [], include_unverified=True)}
+    assert "VD-PILLAR2-BUYBACK-001" not in default_ids
+    assert "VD-LIFE-INSURANCE-001" not in default_ids
+    assert "VD-PILLAR2-BUYBACK-001" in all_ids
+    assert "VD-LIFE-INSURANCE-001" in all_ids
 
 
 def test_evaluate_rejects_none_profile() -> None:
@@ -218,7 +232,7 @@ def _load_sarah_facts() -> list[TaxFact]:
     return out
 
 
-def test_demo_gate_sarah_produces_exactly_three_findings() -> None:
+def test_demo_gate_sarah_keeps_verified_findings_after_phase_b_expansion() -> None:
     profile = _load_sarah_profile()
     facts = _load_sarah_facts()
 
@@ -228,15 +242,12 @@ def test_demo_gate_sarah_produces_exactly_three_findings() -> None:
     findings = evaluate(profile, facts)
     rule_ids = [f.rule_id for f in findings]
 
-    assert len(findings) == 3, (
-        f"demo gate broken: expected 3 findings, got {len(findings)} -> "
-        f"{rule_ids}"
-    )
     assert set(rule_ids) == {
         "VD-CHILDCARE-001",
         "VD-PILLAR3A-001",
         "VD-COMMUTE-001",
     }
+    assert len(findings) == 3
 
 
 def test_demo_gate_findings_all_cite_vaud_2025_instructions() -> None:
@@ -255,13 +266,13 @@ def test_demo_gate_findings_sorted_by_severity_then_id() -> None:
     assert keys == sorted(keys)
 
 
-def test_active_rule_set_has_six_rules() -> None:
-    assert len(RULES) == 6
-    assert {r.id for r in RULES} == {
+def test_active_rule_set_keeps_original_six_and_expands_phase_b_rules() -> None:
+    assert len(RULES) >= 20
+    assert {
         "VD-CHILDCARE-001",
         "VD-PILLAR3A-001",
         "VD-COMMUTE-001",
         "VD-MEAL-001",
         "VD-INSURANCE-001",
         "VD-BANK-001",
-    }
+    }.issubset({r.id for r in RULES})

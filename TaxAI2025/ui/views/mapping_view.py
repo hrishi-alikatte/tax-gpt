@@ -16,18 +16,28 @@ from TaxAI2025.ui.state import AppState
 
 
 MAPPING_TABLE: list[tuple[str, str, str, str, bool]] = [
-    ("salary.gross_annual_chf", "Gross annual salary", "Salaire brut annuel", "100", True),
-    ("salary.net_annual_chf", "Net annual salary", "Salaire net annuel", "—", False),
+    ("salary.gross_annual_chf", "Gross annual salary", "Salaire brut annuel", "—", False),
+    ("salary.net_annual_chf", "Net annual salary", "Salaire net annuel", "100", True),
     ("salary.ahv_iv_eo_chf", "AHV/IV/EO contributions", "Cotisations AVS/AI/APG", "—", False),
     ("salary.unemployment_chf", "Unemployment insurance", "Assurance chômage", "—", False),
     ("salary.pension_2nd_pillar_chf", "2nd pillar contributions", "Cotisations LPP", "—", False),
-    ("health_insurance.annual_premium_chf", "Health insurance premium (annual)", "Prime d'assurance maladie", "320", True),
-    ("childcare.total_paid_chf", "Childcare expenses", "Frais de garde des enfants", "350", True),
-    ("pillar_3a.annual_contribution_chf", "Pillar 3a contribution", "Cotisation 3e pilier A", "380", True),
+    ("health_insurance.annual_premium_chf", "Health insurance premium (annual)", "Prime d'assurance maladie", "300", True),
+    ("childcare.total_paid_chf", "Childcare expenses", "Frais de garde des enfants", "670", True),
+    ("pillar_3a.annual_contribution_chf", "Pillar 3a contribution", "Cotisation 3e pilier A", "310", True),
     ("transport.annual_cost_chf", "Commute / transport cost", "Frais de transport", "140", True),
     ("meal_allowance.method", "Meal allowance method", "Frais de repas", "150", True),
-    ("bank.year_end_balance_chf", "Bank balance 31 December", "Solde bancaire au 31 décembre", "800", True),
-    ("bank.annual_interest_chf", "Interest income", "Intérêts perçus", "810", True),
+    ("bank.year_end_balance_chf", "Bank balance 31 December", "Solde bancaire au 31 décembre", "410", True),
+    ("bank.annual_interest_chf", "Interest income", "Intérêts perçus", "410", True),
+    ("mortgage.annual_interest_chf", "Mortgage interest", "Intérêts hypothécaires", "pending", False),
+    ("alimony.paid_chf", "Alimony paid", "Pension alimentaire versée", "630", False),
+    ("donations.total_chf", "Donations paid", "Dons / versements", "620", False),
+    ("parental_support.paid_chf", "Support paid to parents/dependents", "Personne à charge / aide aux parents", "680", False),
+    ("medical.unreimbursed_chf", "Unreimbursed medical costs", "Frais médicaux non remboursés", "pending", False),
+    ("education.tuition_paid_chf", "Education / training fees paid", "Frais de formation", "618", False),
+    ("pillar2.buyback_chf", "Second-pillar buyback", "Rachat d'années d'assurance LPP", "320", True),
+    ("foreign_income.gross_chf", "Gross foreign income", "Revenu étranger brut", "pending", False),
+    ("disability.acknowledged", "Disability proof acknowledged", "Attestation invalidité / rente AI", "pending", False),
+    ("unemployment.benefits_chf", "Unemployment benefits", "Indemnités de chômage", "pending", False),
 ]
 
 

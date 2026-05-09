@@ -1,0 +1,16 @@
+{
+  "scenario_id": "foreign_assets_alimony",
+  "synthetic": true,
+  "_disclaimer": "Synthetic persona only. Not a real person.",
+  "first_name": "Mina",
+  "permit_type": "C",
+  "marital_status": "divorced",
+  "spouse_works": null,
+  "children_count": 0,
+  "children_ages": [],
+  "commune_of_residence": "Lausanne",
+  "employer_name": "Global Demo SA",
+  "work_commune": "Lausanne",
+  "tax_year": 2024,
+  "has_workplace_canteen": true
+}

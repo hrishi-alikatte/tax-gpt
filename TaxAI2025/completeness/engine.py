@@ -49,12 +49,17 @@ def evaluate(
     facts: "Iterable[TaxFact]",
     *,
     rules: "Iterable[CompletenessRule] | None" = None,
+    include_unverified: bool = False,
 ) -> list[Finding]:
     if profile is None:
         raise ValueError("evaluate requires a UserProfile (got None)")
 
     confirmed_facts = _confirmed_only(facts)
     active_rules = list(rules) if rules is not None else RULES
+    if not include_unverified:
+        active_rules = [
+            r for r in active_rules if r.verification_status == "vaud_official"
+        ]
 
     findings: list[Finding] = []
     for rule in active_rules:

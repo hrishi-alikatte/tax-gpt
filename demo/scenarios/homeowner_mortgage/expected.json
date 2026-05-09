@@ -1,0 +1,21 @@
+{
+  "_doc": "Homeowner with mortgage interest confirmed; verified Completeness should stay concise.",
+  "facts_count": 6,
+  "findings_count": 1,
+  "findings_rule_ids": ["VD-PILLAR3A-001"],
+  "findings_pdf_pages": {"VD-PILLAR3A-001": 31},
+  "interview_question_count": 10,
+  "interview_question_ids": [
+    "IQ-FOREIGN-ASSETS-001",
+    "IQ-FOREIGN-INCOME-001",
+    "IQ-PILLAR3A-001",
+    "IQ-UNEMPLOYMENT-001",
+    "IQ-DISABILITY-001",
+    "IQ-DONATION-001",
+    "IQ-EDUCATION-001",
+    "IQ-MEDICAL-001",
+    "IQ-PARENTAL-SUPPORT-001",
+    "IQ-PILLAR2-BUYBACK-001"
+  ],
+  "max_elapsed_seconds": 3.0
+}

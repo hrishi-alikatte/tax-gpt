@@ -26,6 +26,7 @@ AuditEventType = Literal[
     "document_type_confirmed",
     "fact_confirmed",
     "fact_unconfirmed",
+    "interview_answered",
     "explain_asked",
     "explain_refused",
     "navigated",
@@ -60,6 +61,14 @@ class UserProfile(BaseModel):
     has_workplace_canteen: bool | None = None
 
 
+class InterviewAnswer(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    question_id: str
+    answer: str
+    recorded_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 REQUIRED_FIELDS_BY_DOC_TYPE: dict[DocumentType, tuple[str, ...]] = {
     "salary_certificate": (
         "salary.gross_annual_chf",
@@ -70,6 +79,16 @@ REQUIRED_FIELDS_BY_DOC_TYPE: dict[DocumentType, tuple[str, ...]] = {
     "pillar_3a_certificate": ("pillar_3a.annual_contribution_chf",),
     "transport_pass": ("transport.annual_cost_chf",),
     "bank_year_end_statement": ("bank.year_end_balance_chf",),
+    "mortgage_interest_statement": ("mortgage.annual_interest_chf",),
+    "alimony_paid_received": ("alimony.paid_chf",),
+    "donation_receipt": ("donations.total_chf",),
+    "parental_support_receipt": ("parental_support.paid_chf",),
+    "medical_bills_unreimbursed": ("medical.unreimbursed_chf",),
+    "education_invoice": ("education.tuition_paid_chf",),
+    "second_pillar_buyback_attestation": ("pillar2.buyback_chf",),
+    "foreign_income_attestation": ("foreign_income.gross_chf",),
+    "disability_proof": ("disability.acknowledged",),
+    "unemployment_benefits_attestation": ("unemployment.benefits_chf",),
     "unknown": (),
 }
 
@@ -82,6 +101,7 @@ class AppState:
         self.documents: list[DocumentRecord] = []
         self.facts: list[TaxFact] = []
         self.findings: list[Any] = []
+        self.interview_answers: list[InterviewAnswer] = []
         self.audit_log: list[AuditEntry] = []
 
     # ----- audit ---------------------------------------------------------
@@ -162,11 +182,23 @@ class AppState:
     def confirmed_facts(self) -> list[TaxFact]:
         return [f for f in self.facts if f.confirmed_by_user]
 
+    # ----- interview -----------------------------------------------------
+
+    def answered_question_ids(self) -> set[str]:
+        return {a.question_id for a in self.interview_answers}
+
+    def record_interview_answer(self, question_id: str, answer: str) -> InterviewAnswer:
+        entry = InterviewAnswer(question_id=question_id, answer=answer)
+        self.interview_answers.append(entry)
+        self.record("interview_answered", question_id=question_id, answer=answer)
+        return entry
+
 
 __all__ = [
     "AppState",
     "AuditEntry",
     "AuditEventType",
+    "InterviewAnswer",
     "REQUIRED_FIELDS_BY_DOC_TYPE",
     "UserProfile",
 ]

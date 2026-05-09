@@ -1,0 +1,18 @@
+{
+  "_disclaimer": "Synthetic data only.",
+  "document": {
+    "doc_id": "demo-doc-unemployed",
+    "filename": "synthetic_health_insurance_unemployed.pdf",
+    "file_path": "<replay>/synthetic_health_insurance_unemployed.pdf",
+    "document_type": "health_insurance_premium",
+    "classifier_confidence": 0.95,
+    "classifier_method": "heuristic",
+    "pdf_page_count": 1
+  },
+  "facts": [
+    {"canonical_field": "health_insurance.annual_premium_chf", "value": 4300.0, "source_doc": "insurance_unemployed.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "bank.year_end_balance_chf", "value": 8800.0, "source_doc": "bank_unemployed.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "unemployment.benefits_chf", "value": 22800.0, "source_doc": "unemployment_attestation.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "foreign_income.gross_chf", "value": 6400.0, "source_doc": "foreign_income_attestation.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false}
+  ]
+}

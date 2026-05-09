@@ -1,0 +1,20 @@
+{
+  "_doc": "Medical and education facts confirmed; verified Completeness has no findings.",
+  "facts_count": 7,
+  "findings_count": 0,
+  "findings_rule_ids": [],
+  "findings_pdf_pages": {},
+  "interview_question_count": 9,
+  "interview_question_ids": [
+    "IQ-FOREIGN-ASSETS-001",
+    "IQ-FOREIGN-INCOME-001",
+    "IQ-UNEMPLOYMENT-001",
+    "IQ-DISABILITY-001",
+    "IQ-DONATION-001",
+    "IQ-MORTGAGE-001",
+    "IQ-PARENTAL-SUPPORT-001",
+    "IQ-PILLAR2-BUYBACK-001",
+    "IQ-REAL-ESTATE-MAINT-001"
+  ],
+  "max_elapsed_seconds": 3.0
+}

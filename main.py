@@ -6,6 +6,8 @@ by a user click in the upload or explain view.
 """
 from __future__ import annotations
 
+import os
+
 import flet as ft
 
 try:
@@ -27,6 +29,7 @@ from TaxAI2025.ui.state import AppState
 from TaxAI2025.ui.views.completeness_view import build_completeness_view
 from TaxAI2025.ui.views.explain_view import build_explain_view
 from TaxAI2025.ui.views.extracted_view import build_extracted_view
+from TaxAI2025.ui.views.interview_view import build_interview_view
 from TaxAI2025.ui.views.intake_view import build_intake_view
 from TaxAI2025.ui.views.mapping_view import build_mapping_view
 from TaxAI2025.ui.views.upload_view import build_upload_view
@@ -181,6 +184,8 @@ def main(page: ft.Page) -> None:
             return build_upload_view(state, navigator, page)
         if screen == Screen.EXTRACTED:
             return build_extracted_view(state, navigator, page)
+        if screen == Screen.INTERVIEW:
+            return build_interview_view(state, navigator, page)
         if screen == Screen.COMPLETENESS:
             return build_completeness_view(state, navigator)
         if screen == Screen.MAPPING:
@@ -217,5 +222,30 @@ def main(page: ft.Page) -> None:
         print("Live mode — extraction and RAG will hit the configured providers.")
 
 
+def cloud_run_port() -> int | None:
+    """Return the Cloud Run port when the app is running as a web service."""
+    value = os.environ.get("PORT")
+    if value is None or not value.strip():
+        return None
+    return int(value)
+
+
+def app_run_kwargs() -> dict[str, object]:
+    """Build Flet startup kwargs for local desktop or Cloud Run web mode."""
+    port = cloud_run_port()
+    if port is None:
+        return {"target": main}
+    return {
+        "target": main,
+        "view": ft.AppView.WEB_BROWSER,
+        "host": "0.0.0.0",
+        "port": port,
+    }
+
+
+def run_app() -> None:
+    ft.app(**app_run_kwargs())
+
+
 if __name__ == "__main__":
-    ft.app(main)
+    run_app()

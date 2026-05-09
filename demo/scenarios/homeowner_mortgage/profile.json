@@ -1,0 +1,16 @@
+{
+  "scenario_id": "homeowner_mortgage",
+  "synthetic": true,
+  "_disclaimer": "Synthetic persona only. Not a real person.",
+  "first_name": "Claire",
+  "permit_type": "C",
+  "marital_status": "married",
+  "spouse_works": true,
+  "children_count": 0,
+  "children_ages": [],
+  "commune_of_residence": "Lausanne",
+  "employer_name": "ACME SA",
+  "work_commune": "Lausanne",
+  "tax_year": 2024,
+  "has_workplace_canteen": true
+}

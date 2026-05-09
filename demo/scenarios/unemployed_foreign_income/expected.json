@@ -1,0 +1,18 @@
+{
+  "_doc": "Unemployed persona with foreign income and unemployment benefits confirmed.",
+  "facts_count": 4,
+  "findings_count": 0,
+  "findings_rule_ids": [],
+  "findings_pdf_pages": {},
+  "interview_question_count": 7,
+  "interview_question_ids": [
+    "IQ-FOREIGN-ASSETS-001",
+    "IQ-DISABILITY-001",
+    "IQ-DONATION-001",
+    "IQ-MEDICAL-001",
+    "IQ-MORTGAGE-001",
+    "IQ-PARENTAL-SUPPORT-001",
+    "IQ-REAL-ESTATE-MAINT-001"
+  ],
+  "max_elapsed_seconds": 3.0
+}

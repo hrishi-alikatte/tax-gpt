@@ -1,5 +1,5 @@
 {
-  "_doc": "Expected outputs. David: divorced + 1 child + commute + no canteen + no 3a / childcare / transport facts.",
+  "_doc": "Expected outputs. David: divorced + 1 child + commute + no canteen; Completeness stays verified and concise.",
   "facts_count": 4,
   "findings_count": 4,
   "findings_rule_ids": [
@@ -14,5 +14,18 @@
     "VD-PILLAR3A-001": 31,
     "VD-MEAL-001": 21
   },
+  "interview_question_count": 10,
+  "interview_question_ids": [
+    "IQ-ALIMONY-001",
+    "IQ-CHILDCARE-001",
+    "IQ-COMMUTE-001",
+    "IQ-FOREIGN-ASSETS-001",
+    "IQ-FOREIGN-INCOME-001",
+    "IQ-KIDS-MEDICAL-001",
+    "IQ-PILLAR3A-001",
+    "IQ-UNEMPLOYMENT-001",
+    "IQ-DISABILITY-001",
+    "IQ-DONATION-001"
+  ],
   "max_elapsed_seconds": 3.0
 }

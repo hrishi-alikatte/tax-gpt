@@ -10,6 +10,7 @@ class Screen(str, Enum):
     INTAKE = "intake"
     UPLOAD = "upload"
     EXTRACTED = "extracted"
+    INTERVIEW = "interview"
     COMPLETENESS = "completeness"
     MAPPING = "mapping"
     EXPLAIN = "explain"
@@ -19,6 +20,7 @@ SCREEN_ORDER: tuple[Screen, ...] = (
     Screen.INTAKE,
     Screen.UPLOAD,
     Screen.EXTRACTED,
+    Screen.INTERVIEW,
     Screen.COMPLETENESS,
     Screen.MAPPING,
     Screen.EXPLAIN,
@@ -29,9 +31,10 @@ SCREEN_LABELS: dict[Screen, str] = {
     Screen.INTAKE: "1. Intake",
     Screen.UPLOAD: "2. Upload",
     Screen.EXTRACTED: "3. Confirm Values",
-    Screen.COMPLETENESS: "4. Missing Things",
-    Screen.MAPPING: "5. VaudTax Mapping",
-    Screen.EXPLAIN: "6. Explain",
+    Screen.INTERVIEW: "4. Interview",
+    Screen.COMPLETENESS: "5. Missing Things",
+    Screen.MAPPING: "6. VaudTax Mapping",
+    Screen.EXPLAIN: "7. Explain",
 }
 
 

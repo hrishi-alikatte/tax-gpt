@@ -10,7 +10,8 @@ import flet as ft
 
 DISCLAIMER_TEXT = (
     "Informational only — consult an accredited fiduciary in Vaud for "
-    "filing decisions."
+    "filing decisions. Privacy: anonymous session data is intended for "
+    "30-day retention and can be wiped on request."
 )
 
 

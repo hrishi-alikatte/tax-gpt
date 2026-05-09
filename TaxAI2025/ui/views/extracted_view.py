@@ -19,6 +19,8 @@ from TaxAI2025.ui.components.footer import build_footer
 from TaxAI2025.ui.navigation import Navigator, Screen
 from TaxAI2025.ui.state import AppState
 
+NEXT_AFTER_EXTRACTION = Screen.INTERVIEW
+
 
 def _format_value(value: Any) -> str:
     if isinstance(value, (int, float)):
@@ -44,7 +46,7 @@ def build_extracted_view(
 
     def on_continue(_e: Any) -> None:
         if state.is_extracted_complete():
-            navigator.go(Screen.MAPPING)
+            navigator.go(NEXT_AFTER_EXTRACTION)
 
     continue_btn.on_click = on_continue
 
@@ -185,4 +187,4 @@ def build_extracted_view(
     )
 
 
-__all__ = ["build_extracted_view"]
+__all__ = ["NEXT_AFTER_EXTRACTION", "build_extracted_view"]

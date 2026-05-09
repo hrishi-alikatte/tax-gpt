@@ -26,6 +26,16 @@ _DOC_TYPE_LABELS: dict[str, str] = {
     "pillar_3a_certificate": "Pillar 3a certificate (Attestation 3e pilier A)",
     "transport_pass": "Public transport subscription (Abonnement)",
     "bank_year_end_statement": "Bank year-end statement (Relevé bancaire)",
+    "mortgage_interest_statement": "Mortgage interest statement (Intérêts hypothécaires)",
+    "alimony_paid_received": "Alimony statement (Pension alimentaire)",
+    "donation_receipt": "Donation receipt (Attestation de don)",
+    "parental_support_receipt": "Parental support receipt (Aide aux parents)",
+    "medical_bills_unreimbursed": "Unreimbursed medical bills (Frais médicaux)",
+    "education_invoice": "Education invoice (Frais de formation)",
+    "second_pillar_buyback_attestation": "Second-pillar buyback attestation (Rachat LPP)",
+    "foreign_income_attestation": "Foreign income attestation (Revenu étranger)",
+    "disability_proof": "Disability proof (Attestation invalidité)",
+    "unemployment_benefits_attestation": "Unemployment benefits attestation (Chômage)",
     "unknown": "Unknown — needs your input",
 }
 

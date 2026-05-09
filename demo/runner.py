@@ -41,6 +41,7 @@ class RunnerResult:
     profile: dict[str, Any]
     document: dict[str, Any]
     facts_summary: list[dict[str, Any]]
+    interview_summary: list[dict[str, Any]]
     findings_summary: list[dict[str, Any]]
     audit_log_size: int
     diffs: list[str]
@@ -75,6 +76,7 @@ def _run(scenario: str) -> RunnerResult:
 
     from TaxAI2025.completeness import evaluate
     from TaxAI2025.extraction import extract_from_upload
+    from TaxAI2025.interview import select_questions
     from TaxAI2025.ui.state import AppState, UserProfile
 
     scenario_dir = SCENARIOS_DIR / scenario
@@ -106,6 +108,12 @@ def _run(scenario: str) -> RunnerResult:
             "Fixture or REQUIRED_FIELDS_BY_DOC_TYPE drift."
         )
 
+    interview_questions = select_questions(
+        state.profile,
+        state.facts,
+        answered_ids=state.answered_question_ids(),
+        limit=10,
+    )
     findings = evaluate(state.profile, state.facts)
     state.findings = findings
 
@@ -129,6 +137,15 @@ def _run(scenario: str) -> RunnerResult:
         }
         for f in findings
     ]
+    interview_summary = [
+        {
+            "question_id": q.id,
+            "severity": q.severity,
+            "pdf_page": q.pdf_page,
+            "citation_token": q.citation_token(),
+        }
+        for q in interview_questions
+    ]
 
     diffs: list[str] = []
     expected = _load_expected(scenario_dir)
@@ -149,6 +166,21 @@ def _run(scenario: str) -> RunnerResult:
             diffs.extend(
                 _diff("findings_pdf_pages", exp_pages, actual_pages)
             )
+        exp_question_count = expected.get("interview_question_count")
+        if exp_question_count is not None:
+            diffs.extend(
+                _diff(
+                    "interview_question_count",
+                    exp_question_count,
+                    len(interview_summary),
+                )
+            )
+        exp_question_ids = expected.get("interview_question_ids")
+        if exp_question_ids is not None:
+            actual_question_ids = [q["question_id"] for q in interview_summary]
+            diffs.extend(
+                _diff("interview_question_ids", exp_question_ids, actual_question_ids)
+            )
         max_seconds = expected.get("max_elapsed_seconds")
         if max_seconds is not None and elapsed > max_seconds:
             diffs.append(
@@ -161,6 +193,7 @@ def _run(scenario: str) -> RunnerResult:
         profile=profile.model_dump(mode="json", exclude_none=True),
         document=record.model_dump(mode="json", exclude_none=True),
         facts_summary=facts_summary,
+        interview_summary=interview_summary,
         findings_summary=findings_summary,
         audit_log_size=len(state.audit_log),
         diffs=diffs,
@@ -186,6 +219,9 @@ def _print_summary(result: RunnerResult, verbose: bool) -> None:
                 f"    {f['canonical_field']}={f['value']} p.{f['source_page']} "
                 f"confirmed={f['confirmed_by_user']}"
             )
+        print("  interview questions:")
+        for q in result.interview_summary:
+            print(f"    {q['question_id']} [{q['severity']}] {q['citation_token']}")
     if result.diffs:
         print("  diffs:")
         for d in result.diffs:

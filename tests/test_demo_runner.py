@@ -8,6 +8,17 @@ import pytest
 
 from demo import runner
 
+ALL_SCENARIOS = (
+    "expat_c_permit_basic",
+    "single_no_kids",
+    "divorced_with_alimony",
+    "homeowner_mortgage",
+    "charitable_donor",
+    "medical_education",
+    "unemployed_foreign_income",
+    "foreign_assets_alimony",
+)
+
 
 def test_runner_exits_zero_for_default_scenario(
     azure_env: None, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
@@ -195,3 +206,20 @@ def test_runner_three_scenarios_all_distinct_finding_counts(
     assert len(set(counts.values())) == 3, (
         f"expected 3 distinct finding counts, got {counts}"
     )
+
+
+@pytest.mark.parametrize("scenario", ALL_SCENARIOS)
+def test_runner_all_phase_b_personas_pass_strict_3s(
+    azure_env: None,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture,
+    scenario: str,
+) -> None:
+    rc = runner.main(["--scenario", scenario, "--strict-3s"])
+    out = capsys.readouterr().out
+    assert rc == 0, out
+    assert "[OK]" in out
+
+
+def test_phase_b_has_at_least_eight_personas() -> None:
+    assert len(ALL_SCENARIOS) >= 8

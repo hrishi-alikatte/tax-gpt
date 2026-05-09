@@ -1,0 +1,20 @@
+{
+  "_disclaimer": "Synthetic data only.",
+  "document": {
+    "doc_id": "demo-doc-donor",
+    "filename": "synthetic_salary_donor.pdf",
+    "file_path": "<replay>/synthetic_salary_donor.pdf",
+    "document_type": "salary_certificate",
+    "classifier_confidence": 0.95,
+    "classifier_method": "heuristic",
+    "pdf_page_count": 1
+  },
+  "facts": [
+    {"canonical_field": "salary.gross_annual_chf", "value": 92000.0, "source_doc": "salary_donor.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "salary.net_annual_chf", "value": 76000.0, "source_doc": "salary_donor.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "health_insurance.annual_premium_chf", "value": 3900.0, "source_doc": "insurance_donor.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "bank.year_end_balance_chf", "value": 25000.0, "source_doc": "bank_donor.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "pillar_3a.annual_contribution_chf", "value": 7056.0, "source_doc": "pillar3a_donor.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "donations.total_chf", "value": 900.0, "source_doc": "donation_receipts_donor.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false}
+  ]
+}

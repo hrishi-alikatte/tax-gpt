@@ -1,0 +1,21 @@
+{
+  "_disclaimer": "Synthetic data only.",
+  "document": {
+    "doc_id": "demo-doc-foreign-assets",
+    "filename": "synthetic_salary_foreign_assets.pdf",
+    "file_path": "<replay>/synthetic_salary_foreign_assets.pdf",
+    "document_type": "salary_certificate",
+    "classifier_confidence": 0.95,
+    "classifier_method": "heuristic",
+    "pdf_page_count": 1
+  },
+  "facts": [
+    {"canonical_field": "salary.gross_annual_chf", "value": 99000.0, "source_doc": "salary_foreign_assets.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "salary.net_annual_chf", "value": 80500.0, "source_doc": "salary_foreign_assets.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "health_insurance.annual_premium_chf", "value": 4100.0, "source_doc": "insurance_foreign_assets.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "bank.year_end_balance_chf", "value": 31000.0, "source_doc": "bank_foreign_assets.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "foreign_income.gross_chf", "value": 12000.0, "source_doc": "foreign_income_foreign_assets.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "foreign_assets.year_end_balance_chf", "value": 54000.0, "source_doc": "foreign_assets_statement.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false},
+    {"canonical_field": "alimony.paid_chf", "value": 9600.0, "source_doc": "alimony_statement.pdf", "source_page": 1, "confidence": 1.0, "extraction_method": "regex", "confirmed_by_user": false}
+  ]
+}
