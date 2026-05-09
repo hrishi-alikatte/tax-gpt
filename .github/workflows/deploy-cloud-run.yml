@@ -28,9 +28,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-      GCP_REGION: ${{ inputs.region }}
-      CLOUD_RUN_SERVICE: ${{ inputs.service }}
-      ARTIFACT_REPOSITORY: ${{ inputs.repository }}
+      GCP_REGION: ${{ inputs.region || 'europe-west6' }}
+      CLOUD_RUN_SERVICE: ${{ inputs.service || 'vaudtaxai-web' }}
+      ARTIFACT_REPOSITORY: ${{ inputs.repository || 'vaudtaxai' }}
       IMAGE_NAME: vaudtaxai
     steps:
       - name: Checkout
@@ -46,6 +46,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
+          python -m pip install -r requirements-cloudrun.txt
           python -m pip install -e .
 
       - name: Run tests
@@ -88,7 +89,8 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --port=8080 \
-            --memory=2Gi \
-            --cpu=1 \
-            --concurrency=20 \
+            --memory=4Gi \
+            --cpu=2 \
+            --min-instances=1 \
+            --concurrency=50 \
             --max-instances=3
