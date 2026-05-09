@@ -105,6 +105,10 @@ def build_intake_view(state: AppState, navigator: Navigator) -> ft.Control:
         value=str(profile.tax_year),
         width=180,
     )
+    canteen = ft.Checkbox(
+        label="I have a workplace canteen / employer-provided meals",
+        value=profile.has_workplace_canteen is True,
+    )
 
     error_text = ft.Text("", color="#B91C1C", size=13)
     permit_banner = ft.Text(
@@ -160,6 +164,7 @@ def build_intake_view(state: AppState, navigator: Navigator) -> ft.Control:
             employer_name=(employer.value or "").strip() or None,
             work_commune=(work_commune.value or "").strip() or None,
             tax_year=year,
+            has_workplace_canteen=bool(canteen.value),
         )
         state.set_profile(new_profile)
         navigator.go(Screen.UPLOAD)
@@ -195,6 +200,7 @@ def build_intake_view(state: AppState, navigator: Navigator) -> ft.Control:
                 wrap=True, spacing=20, run_spacing=12,
             ),
             ft.Row([tax_year], spacing=20),
+            ft.Row([canteen], spacing=20),
             ft.Container(height=10),
             error_text,
             ft.Row([continue_btn], alignment=ft.MainAxisAlignment.END),

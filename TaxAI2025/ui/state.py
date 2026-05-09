@@ -57,6 +57,7 @@ class UserProfile(BaseModel):
     employer_name: str | None = None
     work_commune: str | None = None
     tax_year: int = 2024
+    has_workplace_canteen: bool | None = None
 
 
 REQUIRED_FIELDS_BY_DOC_TYPE: dict[DocumentType, tuple[str, ...]] = {

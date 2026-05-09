@@ -32,14 +32,17 @@ def test_replay_returns_canned_extraction_for_default_scenario(
         "transport_pass",
         "bank_year_end_statement",
     }
-    assert len(facts) >= 6
+    assert len(facts) >= 3
     assert all(f.confirmed_by_user is False for f in facts)
     assert all(f.source_doc and f.source_page >= 1 for f in facts)
 
 
-def test_replay_loads_all_six_doc_type_facts(
+def test_replay_loads_demo_spec_three_doc_types(
     azure_env: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """Per DEMO_SCRIPT.md, Sarah uploads 3 docs (salary, insurance, bank).
+    childcare / pillar 3a / transport are intentionally omitted so the
+    completeness engine surfaces them as findings."""
     _activate_replay(monkeypatch)
     from TaxAI2025.extraction import extract_from_upload
 
@@ -47,10 +50,11 @@ def test_replay_loads_all_six_doc_type_facts(
     fields = {f.canonical_field for f in facts}
     assert "salary.gross_annual_chf" in fields
     assert "health_insurance.annual_premium_chf" in fields
-    assert "childcare.total_paid_chf" in fields
-    assert "pillar_3a.annual_contribution_chf" in fields
-    assert "transport.annual_cost_chf" in fields
     assert "bank.year_end_balance_chf" in fields
+    # Intentionally absent — completeness engine flags these.
+    assert "childcare.total_paid_chf" not in fields
+    assert "pillar_3a.annual_contribution_chf" not in fields
+    assert "transport.annual_cost_chf" not in fields
 
 
 def test_replay_missing_scenario_raises(

@@ -33,6 +33,7 @@ Any concept outside this fence is **out of scope** — flag and stop.
 | `employer_name`          | str \| None                         | yes      |                                               |
 | `work_commune`           | str \| None                         | yes      | drives commute deduction rule                 |
 | `tax_year`               | int                                 | yes      | 2024 for MVP                                  |
+| `has_workplace_canteen`  | bool \| None                        | optional | short-circuits `VD-MEAL-001` when `True`. Added M4 to keep the demo-spec finding count at three (Sarah is `True`). |
 
 ---
 
@@ -85,22 +86,38 @@ The "Continue" button on the extracted-values screen is **disabled** until every
 
 ## 6. Active completeness rules (initial set)
 
-Each rule lives in `completeness/rules.py` and must carry a real Vaud Instructions citation. Page numbers below are **placeholders** until the domain analyst confirms.
+Each rule lives in `TaxAI2025/completeness/rules.py` and ships with a
+`verification_status` discriminator on `CompletenessRule`. The values:
 
-| Rule id              | Triggers when                                                                    | Asks for                          | Source (verify)             | Severity        |
-| -------------------- | -------------------------------------------------------------------------------- | --------------------------------- | --------------------------- | --------------- |
-| `VD-CHILDCARE-001`   | `children_count > 0` AND no `childcare.total_paid_chf` fact                      | childcare invoices                | Vaud Instr. 2024 p. ??      | likely_missing  |
-| `VD-PILLAR3A-001`    | `employer_name != None` AND no `pillar_3a.annual_contribution_chf` fact          | pillar 3a annual statement        | Vaud Instr. 2024 p. ??      | likely_missing  |
-| `VD-COMMUTE-001`     | `commune_of_residence != work_commune` AND no `transport.annual_cost_chf` fact   | transport pass / commute proof    | Vaud Instr. 2024 p. ??      | likely_missing  |
-| `VD-MEAL-001`        | `employer_name != None` AND no `meal_allowance.method` fact                      | meals method (canteen / none)     | Vaud Instr. 2024 p. ??      | nice_to_have    |
-| `VD-INSURANCE-001`   | No `health_insurance.annual_premium_chf` fact                                    | health insurance year statement   | Vaud Instr. 2024 p. ??      | blocker         |
-| `VD-BANK-001`        | No `bank.year_end_balance_chf` fact                                              | bank year-end statement           | Vaud Instr. 2024 p. ??      | blocker         |
+- `vaud_official` — `pdf_page` confirmed by `vaud-tax-domain-analyst`
+  against `data/official/vd_2025.pdf` and a chunk-level citation can be
+  produced from the live RAG index.
+- `pending` — rule is implemented and golden-tested, but the Vaud 2025
+  Instructions page has not yet been pinned. The UI renders
+  `[Vaud 2025 Instructions, page pending verification]`.
+- `inferred` — reserved for federal-fallback or non-Vaud rules; must
+  carry a §7 open-questions entry. Currently unused.
 
-A rule cannot be merged into the active set without:
+| Rule id              | Triggers when                                                                                  | Asks for                          | Severity        | `verification_status` | `pdf_page` |
+| -------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------- | --------------- | --------------------- | ---------- |
+| `VD-CHILDCARE-001`   | `children_count > 0` AND no confirmed `childcare.total_paid_chf` fact                          | childcare invoices                | likely_missing  | pending               | —          |
+| `VD-PILLAR3A-001`    | `employer_name` non-empty AND no confirmed `pillar_3a.annual_contribution_chf` fact            | pillar 3a annual statement        | likely_missing  | pending               | —          |
+| `VD-COMMUTE-001`     | `commune_of_residence != work_commune` (both set) AND no confirmed `transport.annual_cost_chf` | transport pass / commute proof    | likely_missing  | pending               | —          |
+| `VD-MEAL-001`        | `employer_name` non-empty AND `has_workplace_canteen != True` AND no confirmed `meal_allowance.method` | meals method (canteen / none) | nice_to_have    | pending               | —          |
+| `VD-INSURANCE-001`   | No confirmed `health_insurance.annual_premium_chf` fact                                        | health insurance year statement   | blocker         | pending               | —          |
+| `VD-BANK-001`        | No confirmed `bank.year_end_balance_chf` fact                                                  | bank year-end statement           | blocker         | pending               | —          |
 
-1. A real source citation (page + section).
-2. A golden test (positive + negative profile).
-3. An entry in this table.
+> **Engine confirmation gate**: `evaluate()` filters facts to
+> `confirmed_by_user is True` before any rule runs. A fact extracted by
+> the LLM but not yet ticked by the user is invisible to the engine —
+> see `CLAUDE.md` §5 ("Downstream code must refuse unconfirmed values")
+> and `tests/test_completeness_engine.py::test_evaluate_filters_unconfirmed_facts_before_rules_run`.
+
+A rule cannot be promoted from `pending` to `vaud_official` without:
+
+1. A confirmed Vaud 2025 Instructions PDF page (1-indexed).
+2. A golden test (positive + negative profile) — already in place for the six initial rules.
+3. An entry in this table reflecting the new `verification_status` and `pdf_page`.
 
 ---
 
@@ -109,7 +126,13 @@ A rule cannot be merged into the active set without:
 ### Tax-year scope (now 2025)
 
 - [ ] Verify VaudTax field codes for every entry in §4. Current values are guesses.
-- [ ] Verify exact page references for every rule in §6 against `vd_2025.pdf`.
+- [ ] **Verify exact PDF page references for every rule in §6 against `data/official/vd_2025.pdf`.** All six initial rules currently ship with `verification_status="pending"` and `pdf_page=None`. The engine + UI render the `[Vaud 2025 Instructions, page pending verification]` token until each is pinned. Live retrieval ran during M4 design was deferred per the 25-min implementation budget; `vaud-tax-domain-analyst` to run the retriever (`TaxAI2025.rag.retriever.ChromaRetriever`) per rule keyword set and pin pages.
+  - [ ] `VD-CHILDCARE-001` — search keywords: "frais de garde", "déduction enfants", "crèche".
+  - [ ] `VD-PILLAR3A-001` — search keywords: "3e pilier A", "prévoyance liée", "cotisations 3a".
+  - [ ] `VD-COMMUTE-001` — search keywords: "frais de transport", "déplacements", "abonnement".
+  - [ ] `VD-MEAL-001` — search keywords: "frais de repas", "cantine".
+  - [ ] `VD-INSURANCE-001` — search keywords: "assurance maladie", "primes", "déduction primes".
+  - [ ] `VD-BANK-001` — search keywords: "fortune mobilière", "compte bancaire", "31 décembre".
 - [ ] Childcare deduction cap for 2025 — does Vaud follow Federal cap or have its own?
 - [ ] Transport deduction: kilometric vs actual public-transport-only — what does Vaud accept for 2025?
 - [ ] Meal allowance default rate — confirm against Vaud 2025 Instructions.
