@@ -33,6 +33,12 @@ jobs:
       - name: Run tests
         run: python -m pytest tests/ -q
 
+      - name: Verify Secrets
+        run: |
+          if [ -z "${{ secrets.AZURE_CLIENT_ID }}" ]; then echo "Error: AZURE_CLIENT_ID is missing"; exit 1; fi
+          if [ -z "${{ secrets.AZURE_TENANT_ID }}" ]; then echo "Error: AZURE_TENANT_ID is missing"; exit 1; fi
+          if [ -z "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ]; then echo "Error: AZURE_SUBSCRIPTION_ID is missing"; exit 1; fi
+
       - name: Azure Login
         uses: azure/login@v2
         with:
