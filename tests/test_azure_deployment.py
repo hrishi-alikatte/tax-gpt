@@ -1,4 +1,4 @@
-"""Cloud Run deployment prep tests."""
+"""Azure deployment prep tests."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -23,15 +23,12 @@ def test_app_imports_without_live_model_credentials(monkeypatch) -> None:
     import TaxAI2025.extraction.extract
 
 
-def test_cloud_run_files_are_present_and_keep_official_corpus() -> None:
+def test_azure_deployment_files_are_present() -> None:
     dockerfile = (REPO_ROOT / "Dockerfile").read_text(encoding="utf-8")
     dockerignore = (REPO_ROOT / ".dockerignore").read_text(encoding="utf-8")
     workflow = (
-        REPO_ROOT / ".github" / "workflows" / "deploy-cloud-run.yml"
+        REPO_ROOT / ".github" / "workflows" / "deploy-azure.yml"
     ).read_text(encoding="utf-8")
-    gcp_readme = (REPO_ROOT / "infra" / "gcp" / "README.md").read_text(
-        encoding="utf-8"
-    )
     cloud_requirements = (REPO_ROOT / "requirements-cloudrun.txt").read_text(
         encoding="utf-8"
     )
@@ -42,9 +39,7 @@ def test_cloud_run_files_are_present_and_keep_official_corpus() -> None:
     assert 'CMD ["python", "main.py"]' in dockerfile
     assert "*.pdf" in dockerignore
     assert "!data/official/*.pdf" in dockerignore
-    assert "google-github-actions/auth@v2" in workflow
-    assert "gcloud run deploy" in workflow
-    assert "tax-gpt.online" in gcp_readme
-    assert "Secret Manager" in gcp_readme
+    assert "azure/login@v2" in workflow
+    assert "az containerapp update" in workflow
     assert "sentence-transformers" not in cloud_requirements
     assert "langchain-huggingface" not in cloud_requirements
