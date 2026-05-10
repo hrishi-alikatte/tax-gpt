@@ -89,7 +89,7 @@ function CopilotPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="flex h-[600px] flex-col rounded-lg border bg-card">
           <div className="border-b px-4 py-3">
-            <h2 className="text-sm font-semibold">Source-grounded chat</h2>
+            <h2 className="text-sm font-semibold">Chat with citations</h2>
           </div>
           <div className="flex-1 space-y-4 overflow-y-auto p-4">
             {chatHistory.length === 0 && (

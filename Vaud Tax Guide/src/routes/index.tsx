@@ -17,23 +17,25 @@ function Index() {
         Canton de Vaud
       </div>
       <h1 className="mt-6 text-4xl font-semibold leading-tight tracking-tight md:text-6xl">
-        Your guided copilot for the
+        A guided assistant for your
         <br />
         <span className="text-primary">Vaud tax declaration.</span>
       </h1>
       <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
-        Built for English-speaking C-Permit holders. Upload your documents, confirm what we
-        extracted, and get a complete, source-grounded summary ready for VaudTax.
+        Built for English-speaking C permit holders in Vaud. Upload your tax documents,
+        confirm extracted values, and get a checklist and summary based on the official
+        Vaud 2025 instructions.
       </p>
       <div className="mt-10 flex flex-wrap gap-3">
         <Button asChild size="lg">
           <Link to="/intake">
-            {hasState ? "Resume filing" : "Start filing"} <ArrowRight className="ml-2 h-4 w-4" />
+            {hasState ? "Continue tax filing" : "Start tax filing"}{" "}
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>
         {hasState && (
           <Button asChild variant="outline" size="lg">
-            <Link to="/dashboard">Open dashboard</Link>
+            <Link to="/dashboard">View checklist</Link>
           </Button>
         )}
       </div>
@@ -41,18 +43,18 @@ function Index() {
       <div className="mt-20 grid gap-6 md:grid-cols-3">
         <Feature
           icon={<FileCheck2 className="h-5 w-5 text-primary" />}
-          title="Extract & confirm"
-          body="Drop in your salary certificate, Pillar 3a, health insurance — every value must be confirmed before it counts."
+          title="Upload & confirm"
+          body="Upload your salary certificate, health insurance premiums, bank statements, and Pillar 3a certificate. Confirm every extracted value before it is used."
         />
         <Feature
           icon={<Sparkles className="h-5 w-5 text-primary" />}
-          title="Vaud-aware checks"
-          body="A deterministic rules engine flags missing AVS/LPP, Pillar 3a, and commune-specific deductions."
+          title="VaudTax checks"
+          body="Get checks for common missing items: salary income, AHV/AVS, occupational pension, Pillar 3a, health insurance, transport, and bank accounts."
         />
         <Feature
           icon={<ShieldCheck className="h-5 w-5 text-primary" />}
-          title="Sourced answers"
-          body="The copilot cites the official Vaud 2025 instructions — no guessing, no IRS, no 401k."
+          title="Official-source answers"
+          body="Ask questions in English and get answers based on the official Vaud 2025 tax instructions, with references to the relevant sections."
         />
       </div>
     </div>

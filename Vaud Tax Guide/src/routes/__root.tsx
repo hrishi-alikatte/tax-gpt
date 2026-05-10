@@ -76,7 +76,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "VaudTaxAI Copilot — Guided Tax Filing for Canton Vaud" },
-      { name: "description", content: "An English-first, Vaud-specific AI copilot that guides C-Permit holders through their cantonal tax return." },
+      { name: "description", content: "An English-first, Vaud-specific assistant that guides C permit holders through their cantonal tax return." },
       { property: "og:title", content: "VaudTaxAI Copilot" },
       { property: "og:description", content: "Guided tax filing copilot for Canton Vaud." },
       { property: "og:type", content: "website" },
