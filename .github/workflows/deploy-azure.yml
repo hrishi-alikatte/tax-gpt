@@ -1,9 +1,18 @@
-name: Deploy to Azure
+name: Deploy API to Azure
 
 on:
   push:
     branches:
       - main
+    paths:
+      - "main.py"
+      - "TaxAI2025/**"
+      - "demo/**"
+      - "data/**"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - "Dockerfile"
+      - ".github/workflows/deploy-azure.yml"
   workflow_dispatch:
 
 permissions:
@@ -57,21 +66,19 @@ jobs:
             --resource-group rg-vaudtaxai \
             --image acrvaudtaxai.azurecr.io/vaudtaxai-api:${{ github.sha }}
 
-      - name: Build and Push UI to ACR
+      - name: Smoke check API healthz on default FQDN
         run: |
-          az acr login --name acrvaudtaxai
-          docker buildx build \
-            --platform linux/amd64 \
-            --build-arg VITE_API_BASE_URL=https://api.tax-gpt.online \
-            --file "Vaud Tax Guide/Dockerfile.ui" \
-            --tag acrvaudtaxai.azurecr.io/vaudtaxai-ui:${{ github.sha }} \
-            --tag acrvaudtaxai.azurecr.io/vaudtaxai-ui:latest \
-            --push \
-            "Vaud Tax Guide"
-
-      - name: Deploy UI to Container Apps
-        run: |
-          az containerapp update \
-            --name aca-vaudtaxai-ui \
-            --resource-group rg-vaudtaxai \
-            --image acrvaudtaxai.azurecr.io/vaudtaxai-ui:${{ github.sha }}
+          FQDN=$(az containerapp show -n aca-vaudtaxai-api -g rg-vaudtaxai \
+            --query "properties.configuration.ingress.fqdn" -o tsv)
+          echo "Default FQDN: $FQDN"
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -fsS --max-time 10 "https://$FQDN/healthz" > /tmp/h.json; then
+              echo "Healthz OK: $(cat /tmp/h.json)"
+              exit 0
+            fi
+            echo "Attempt $i failed, sleeping 15s"
+            sleep 15
+          done
+          echo "Healthz never came up. Last logs:"
+          az containerapp logs show -n aca-vaudtaxai-api -g rg-vaudtaxai --tail 50 || true
+          exit 1
