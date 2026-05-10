@@ -93,7 +93,7 @@ function DashboardPage() {
       )}
 
       {data && (
-        <div className="grid items-start gap-4 md:grid-cols-3">
+        <div className="space-y-4">
           <Column
             tone="missing"
             icon={<AlertCircle className="h-4 w-4 text-destructive" />}
@@ -154,20 +154,37 @@ function Column({
       {items.length === 0 ? (
         <p className="text-xs text-muted-foreground">Nothing here.</p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((it) => (
-            <li key={it.code} className="rounded-md border bg-background p-3">
-              <div className="flex min-w-0 items-start gap-2">
-                <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+            <li key={it.code} className="min-w-0 rounded-md border bg-background p-3">
+              <div className="flex min-w-0 items-center gap-2">
+                <span
+                  className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+                  title={it.code}
+                >
                   {it.code}
                 </span>
-                <span className="min-w-0 flex-1 break-all text-sm font-medium">{it.label}</span>
+                {it.label !== it.code && (
+                  <span
+                    className="min-w-0 flex-1 truncate text-sm font-medium"
+                    title={it.label}
+                  >
+                    {it.label}
+                  </span>
+                )}
               </div>
               {it.reason && (
-                <p className="mt-1 break-all text-xs text-muted-foreground">{it.reason}</p>
+                <p className="mt-1 truncate text-xs text-muted-foreground" title={it.reason}>
+                  {it.reason}
+                </p>
               )}
               {it.suggested_doc && (
-                <p className="mt-1 break-all text-xs text-primary">Suggested: {it.suggested_doc}</p>
+                <p
+                  className="mt-1 truncate text-xs text-primary"
+                  title={it.suggested_doc}
+                >
+                  Suggested: {it.suggested_doc}
+                </p>
               )}
             </li>
           ))}
