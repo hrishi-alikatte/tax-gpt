@@ -35,13 +35,13 @@ Drop all 8 PDFs from this folder onto the upload zone. Each file maps
 | File | Classifies as | Facts produced |
 |---|---|---|
 | `01_certificat_salaire.pdf` | `salary_certificate` | `salary.gross_annual_chf=110000`, `salary.net_annual_chf=92000` |
-| `02_assurance_maladie.pdf` | `health_insurance_premium` | `health_insurance.annual_premium_chf=4200` |
+| `02_prime_assurance_maladie.pdf` | `health_insurance_premium` | `health_insurance.annual_premium_chf=4200` |
 | `03_pilier_3a.pdf` | `pillar_3a_certificate` | `pillar_3a.annual_contribution_chf=7056` |
 | `04_garderie.pdf` | `daycare_invoice` | `childcare.total_paid_chf=14400` |
 | `05_releve_bcv.pdf` | `bank_year_end_statement` | `bank.year_end_balance_chf=18400`, `bank.annual_interest_chf=12` |
 | `06_abonnement_cff.pdf` | `transport_pass` | `transport.annual_cost_chf=1140` |
-| `07_attestation_don.pdf` | `donation_receipt` | `donations.total_chf=600` |
-| `08_frais_medicaux.pdf` | `medical_bills_unreimbursed` | `medical.unreimbursed_chf=1250` |
+| `07_attestation-don.pdf` | `donation_receipt` | `donations.total_chf=600` |
+| `08_facture_medical.pdf` | `medical_bills_unreimbursed` | `medical.unreimbursed_chf=1250` |
 
 ## Expected behaviour per stage
 
