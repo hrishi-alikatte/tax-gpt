@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PageTransition } from "@/components/PageTransition";
 import { CitationText } from "@/components/CitationText";
-import { useAppStore, selectConfirmedFacts } from "@/lib/store";
+import { buildCompletenessPayload, useAppStore } from "@/lib/store";
 import { ragExplain } from "@/lib/api";
 import { lookupCode, formatFactValue } from "@/lib/vaud-codes";
 import { Copy, Send } from "lucide-react";
@@ -20,10 +20,17 @@ export const Route = createFileRoute("/copilot")({
 
 function CopilotPage() {
   const profile = useAppStore((s) => s.profile);
-  const facts = useAppStore(selectConfirmedFacts);
+  const documents = useAppStore((s) => s.documents);
+  const interview = useAppStore((s) => s.interview);
   const chatHistory = useAppStore((s) => s.chatHistory);
   const appendChat = useAppStore((s) => s.appendChat);
   const [question, setQuestion] = useState("");
+
+  const payload = useMemo(
+    () => buildCompletenessPayload({ profile, documents, interview } as never),
+    [profile, documents, interview],
+  );
+  const facts = payload.confirmed_facts;
 
   const ask = useMutation({
     mutationFn: (q: string) => ragExplain({ question: q, profile, confirmed_facts: facts }),
@@ -47,10 +54,19 @@ function CopilotPage() {
     setQuestion("");
   };
 
-  const summaryRows = facts.map((f) => {
-    const c = lookupCode(f.canonical_field);
-    return { code: c.code, label: c.label, group: c.group, value: formatFactValue(f.canonical_field, f.value) };
-  });
+  const summaryRows = useMemo(
+    () =>
+      facts.map((f) => {
+        const c = lookupCode(f.canonical_field);
+        return {
+          code: c.code,
+          label: c.label,
+          group: c.group,
+          value: formatFactValue(f.canonical_field, f.value),
+        };
+      }),
+    [facts],
+  );
 
   const copy = async () => {
     const text = summaryRows
