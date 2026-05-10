@@ -4,11 +4,12 @@
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/server.ts",
-  // Custom domains are attached via the Cloudflare dashboard after the
-  // tax-gpt.online zone is Active on Cloudflare (nameservers swapped at
-  // Namecheap). Adding `routes` here while the zone is still
-  // "Pending Nameserver Update" makes `wrangler deploy` fail with
-  // "Could not find zone". See infra/cloudflare/README.md.
+  // Publish to <name>.<account>.workers.dev. Required once because
+  // tax-gpt.online Custom Domains are attached via the dashboard after
+  // the zone goes Active (avoids "Could not find zone" deploy failures).
+  // workers.dev URL stays live as a backup even after Custom Domains
+  // are attached.
+  "workers_dev": true,
   "observability": {
     "enabled": true
   }
