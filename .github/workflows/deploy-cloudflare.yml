@@ -35,10 +35,26 @@ jobs:
           VITE_API_BASE_URL: https://api.tax-gpt.online
         run: bun run build
 
+      - name: Show wrangler context
+        run: |
+          echo "PWD: $(pwd)"
+          ls -la
+          if [ -d dist/server ]; then ls -la dist/server; fi
+
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: "Vaud Tax Guide"
-          command: deploy
+          wranglerVersion: "4.84.1"
+          command: deploy --log-level debug
+
+      - name: Upload wrangler debug log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wrangler-logs
+          path: ~/.config/.wrangler/logs/
+          if-no-files-found: ignore
+          retention-days: 7
