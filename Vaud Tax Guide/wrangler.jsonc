@@ -4,10 +4,11 @@
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/server.ts",
-  "routes": [
-    { "pattern": "tax-gpt.online", "custom_domain": true },
-    { "pattern": "www.tax-gpt.online", "custom_domain": true }
-  ],
+  // Custom domains are attached via the Cloudflare dashboard after the
+  // tax-gpt.online zone is Active on Cloudflare (nameservers swapped at
+  // Namecheap). Adding `routes` here while the zone is still
+  // "Pending Nameserver Update" makes `wrangler deploy` fail with
+  // "Could not find zone". See infra/cloudflare/README.md.
   "observability": {
     "enabled": true
   }
