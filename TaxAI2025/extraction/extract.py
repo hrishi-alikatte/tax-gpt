@@ -1,7 +1,7 @@
 """Per-doc-type field extraction.
 
-Stage 1: deterministic regex/template parsers for high-confidence fields.
-Stage 2: LLM residual via `model_router.generate_json` with strict schemas.
+Stage 1: LLM structured extraction per page.
+Stage 2: deterministic regex/template cross-checks for high-confidence fields.
 
 Every TaxFact returned carries source_doc, source_page, extraction_method,
 extracted_at, and `confirmed_by_user=False`. The extraction layer is
@@ -270,6 +270,7 @@ def _stage_one_regex(
                     value=value,
                     source_doc=record.filename,
                     source_page=page.pdf_page,
+                    snippet=m.group(0).strip(),
                     confidence=score_regex_match(),
                     extraction_method="regex",
                     model_name=None,
@@ -281,7 +282,8 @@ def _stage_one_regex(
         for canonical_field, pattern, value in bool_templates:
             if canonical_field in matched_fields:
                 continue
-            if not pattern.search(page.text):
+            bool_match = pattern.search(page.text)
+            if not bool_match:
                 continue
             facts.append(
                 TaxFact(
@@ -289,6 +291,7 @@ def _stage_one_regex(
                     value=value,
                     source_doc=record.filename,
                     source_page=page.pdf_page,
+                    snippet=bool_match.group(0).strip(),
                     confidence=score_regex_match(),
                     extraction_method="regex",
                     model_name=None,
@@ -334,11 +337,18 @@ def _llm_residual_schema(target_fields: list[str]) -> dict[str, Any]:
     field_obj = {
         "type": "object",
         "additionalProperties": False,
-        "required": ["canonical_field", "value", "source_page", "confidence"],
+        "required": [
+            "canonical_field",
+            "value",
+            "source_page",
+            "snippet",
+            "confidence",
+        ],
         "properties": {
             "canonical_field": {"type": "string", "enum": target_fields},
             "value": {"type": ["number", "string", "null"]},
             "source_page": {"type": "integer", "minimum": 1},
+            "snippet": {"type": "string"},
             "confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0},
         },
     }
@@ -353,35 +363,35 @@ def _llm_residual_schema(target_fields: list[str]) -> dict[str, Any]:
     }
 
 
-def _stage_two_llm(
+def _snippet_in_page(snippet: str, page_text: str) -> bool:
+    normalized = snippet.strip().casefold()
+    return bool(normalized) and normalized in page_text.casefold()
+
+
+def _llm_extract_page(
     record: DocumentRecord,
-    pages: list[PageText],
-    already_matched: set[str],
+    page: PageText,
+    target_fields: list[str],
 ) -> list[TaxFact]:
-    target_fields = [
-        f for f in _RESIDUAL_FIELDS.get(record.document_type, []) if f not in already_matched
-    ]
     if not target_fields:
         return []
 
     from TaxAI2025.ai import model_router
 
-    page_count = max((p.pdf_page for p in pages), default=1)
-
     schema = _llm_residual_schema(target_fields)
     system = (
-        "You extract Swiss Vaud tax fields from one document. "
+        "You extract Swiss Vaud tax fields from one PDF page. "
         "Return strict JSON matching the provided schema. "
         "Only include fields you can locate in the source text. "
         "source_page must be the 1-indexed PDF page where the value appears. "
-        f"Valid pages: 1..{page_count}. "
+        f"The only valid source_page is {page.pdf_page}. "
+        "snippet must be copied literally from the source text and support the value. "
         "Never invent values. Never invent pages. If unsure, omit the field."
     )
-    text_blob = "\n\n".join(f"[page {p.pdf_page}]\n{p.text}" for p in pages)
     user = (
         f"Document type: {record.document_type}\n"
         f"Target fields: {', '.join(target_fields)}\n\n"
-        f"Document text:\n{text_blob}"
+        f"[page {page.pdf_page}]\n{page.text}"
     )
     try:
         payload = model_router.generate_json(
@@ -403,7 +413,6 @@ def _stage_two_llm(
         return []
 
     now = datetime.utcnow()
-    valid_pages = {p.pdf_page for p in pages}
     out: list[TaxFact] = []
     for raw in raw_facts:
         if not isinstance(raw, dict):
@@ -415,14 +424,18 @@ def _stage_two_llm(
         if value is None:
             continue
         page_no = raw.get("source_page")
-        if not isinstance(page_no, int) or page_no not in valid_pages:
+        if page_no != page.pdf_page:
+            continue
+        snippet = raw.get("snippet")
+        if not isinstance(snippet, str) or not _snippet_in_page(snippet, page.text):
             continue
         out.append(
             TaxFact(
                 canonical_field=canonical_field,
                 value=value,
                 source_doc=record.filename,
-                source_page=page_no,
+                source_page=page.pdf_page,
+                snippet=snippet,
                 confidence=score_llm_extraction(raw),
                 extraction_method="llm_structured",
                 model_name=model_name,
@@ -433,14 +446,67 @@ def _stage_two_llm(
     return out
 
 
+def _values_equivalent(left: Any, right: Any) -> bool:
+    try:
+        return abs(float(left) - float(right)) < 0.01
+    except (TypeError, ValueError):
+        return str(left).strip().casefold() == str(right).strip().casefold()
+
+
+def _dedupe_by_field(facts: Iterable[TaxFact]) -> list[TaxFact]:
+    by_field: dict[str, TaxFact] = {}
+    for fact in facts:
+        existing = by_field.get(fact.canonical_field)
+        if existing is None:
+            by_field[fact.canonical_field] = fact
+            continue
+        existing_conf = existing.confidence if existing.confidence is not None else -1.0
+        fact_conf = fact.confidence if fact.confidence is not None else -1.0
+        if fact_conf > existing_conf:
+            by_field[fact.canonical_field] = fact
+    return list(by_field.values())
+
+
+def _llm_extract_document(record: DocumentRecord, pages: list[PageText]) -> list[TaxFact]:
+    target_fields = _RESIDUAL_FIELDS.get(record.document_type, [])
+    if not target_fields:
+        return []
+    facts: list[TaxFact] = []
+    for page in pages:
+        facts.extend(_llm_extract_page(record, page, target_fields))
+    return _dedupe_by_field(facts)
+
+
+def _regex_cross_check(
+    record: DocumentRecord, pages: list[PageText], llm_facts: list[TaxFact]
+) -> list[TaxFact]:
+    regex_facts, _matched = _stage_one_regex(record, pages)
+    by_field = {fact.canonical_field: fact for fact in llm_facts}
+    merged = list(llm_facts)
+    for regex_fact in regex_facts:
+        llm_fact = by_field.get(regex_fact.canonical_field)
+        if llm_fact is None:
+            merged.append(regex_fact)
+            continue
+        if _values_equivalent(llm_fact.value, regex_fact.value):
+            base_confidence = (
+                llm_fact.confidence
+                if llm_fact.confidence is not None
+                else LLM_DEFAULT_CONFIDENCE
+            )
+            llm_fact.confidence = min(base_confidence + 0.1, 1.0)
+            if not llm_fact.snippet:
+                llm_fact.snippet = regex_fact.snippet
+    return _dedupe_by_field(merged)
+
+
 def extract_facts(
     record: DocumentRecord, pages: list[PageText]
 ) -> list[TaxFact]:
     if record.document_type == "unknown":
         return []
-    stage1, matched = _stage_one_regex(record, pages)
-    stage2 = _stage_two_llm(record, pages, matched)
-    return [*stage1, *stage2]
+    llm_facts = _llm_extract_document(record, pages)
+    return _regex_cross_check(record, pages, llm_facts)
 
 
 __all__ = ["extract_facts"]

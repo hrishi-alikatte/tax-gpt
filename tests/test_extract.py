@@ -88,13 +88,17 @@ def test_extractor_never_returns_confirmed_facts(
     assert all(f.confirmed_by_user is False for f in facts)
 
 
-def test_llm_residual_only_runs_when_regex_misses_a_field(
+def test_llm_primary_runs_with_all_document_fields_then_regex_cross_checks(
     azure_and_groq_env: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     pages = [
         PageText(
             pdf_page=1,
-            text="Salaire brut annuel CHF 100'000.00\nSalaire net annuel CHF 80'000.00",
+            text=(
+                "Salaire brut annuel CHF 100'000.00\n"
+                "Salaire net annuel CHF 80'000.00\n"
+                "Cotisations AVS/AI/APG CHF 5'300.00"
+            ),
         )
     ]
 
@@ -108,6 +112,7 @@ def test_llm_residual_only_runs_when_regex_misses_a_field(
                     "canonical_field": "salary.ahv_iv_eo_chf",
                     "value": 5300.0,
                     "source_page": 1,
+                    "snippet": "Cotisations AVS/AI/APG CHF 5'300.00",
                     "confidence": 0.7,
                 }
             ]
@@ -127,15 +132,114 @@ def test_llm_residual_only_runs_when_regex_misses_a_field(
     assert ahv.model_name is not None and "azure" in ahv.model_name
     assert ahv.confidence == pytest.approx(0.7)
 
-    # The LLM must NOT be asked for fields the regex already matched.
+    # The LLM is primary, so it sees every target field. Regex then cross-checks
+    # or supplements the result.
     assert captured, "LLM should be invoked for residual fields"
     schema_fields = (
         captured[0]["schema"]["properties"]["facts"]["items"]["properties"][
             "canonical_field"
         ]["enum"]
     )
-    assert "salary.gross_annual_chf" not in schema_fields
+    assert "salary.gross_annual_chf" in schema_fields
     assert "salary.ahv_iv_eo_chf" in schema_fields
+
+
+def test_llm_extraction_runs_once_per_page(
+    azure_and_groq_env: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pages = [
+        PageText(pdf_page=1, text="Page one only"),
+        PageText(pdf_page=2, text="Page two only"),
+    ]
+    captured_user_messages: list[str] = []
+
+    def fake_generate_json(messages, schema, purpose, *, temperature=0.0):  # noqa: ARG001
+        captured_user_messages.append(messages[1]["content"])
+        return {"facts": []}
+
+    from TaxAI2025.ai import model_router
+
+    monkeypatch.setattr(model_router, "generate_json", fake_generate_json)
+
+    from TaxAI2025.extraction.extract import extract_facts
+
+    assert extract_facts(_record("health_insurance_premium"), pages) == []
+    assert len(captured_user_messages) == 2
+    assert "[page 1]" in captured_user_messages[0]
+    assert "[page 2]" in captured_user_messages[1]
+
+
+def test_llm_fact_with_hallucinated_snippet_is_dropped(
+    azure_and_groq_env: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pages = [
+        PageText(
+            pdf_page=1,
+            text="CERTIFICAT DE SALAIRE\nCotisations AVS/AI/APG CHF 5'300.00",
+        )
+    ]
+
+    def fake_generate_json(messages, schema, purpose, *, temperature=0.0):  # noqa: ARG001
+        return {
+            "facts": [
+                {
+                    "canonical_field": "salary.ahv_iv_eo_chf",
+                    "value": 5300.0,
+                    "source_page": 1,
+                    "snippet": "This text is not in the source page",
+                    "confidence": 0.9,
+                }
+            ]
+        }
+
+    from TaxAI2025.ai import model_router
+
+    monkeypatch.setattr(model_router, "generate_json", fake_generate_json)
+
+    from TaxAI2025.extraction.extract import extract_facts
+
+    assert extract_facts(_record("salary_certificate"), pages) == []
+
+
+def test_regex_cross_check_supplements_and_boosts_llm_facts(
+    azure_and_groq_env: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pages = [
+        PageText(
+            pdf_page=1,
+            text=(
+                "Salaire brut annuel CHF 100'000.00\n"
+                "Salaire net annuel CHF 80'000.00"
+            ),
+        )
+    ]
+
+    def fake_generate_json(messages, schema, purpose, *, temperature=0.0):  # noqa: ARG001
+        return {
+            "facts": [
+                {
+                    "canonical_field": "salary.gross_annual_chf",
+                    "value": 100000.0,
+                    "source_page": 1,
+                    "snippet": "Salaire brut annuel CHF 100'000.00",
+                    "confidence": 0.8,
+                }
+            ]
+        }
+
+    from TaxAI2025.ai import model_router
+
+    monkeypatch.setattr(model_router, "generate_json", fake_generate_json)
+
+    from TaxAI2025.extraction.extract import extract_facts
+
+    facts = extract_facts(_record("salary_certificate"), pages)
+    by_field = {fact.canonical_field: fact for fact in facts}
+
+    assert by_field["salary.gross_annual_chf"].extraction_method == "llm_structured"
+    assert by_field["salary.gross_annual_chf"].confidence == pytest.approx(0.9)
+    assert by_field["salary.net_annual_chf"].extraction_method == "regex"
+    assert by_field["salary.net_annual_chf"].value == pytest.approx(80000.0)
 
 
 def test_llm_residual_receives_full_page_text(

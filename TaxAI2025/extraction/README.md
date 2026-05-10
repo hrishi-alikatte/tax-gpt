@@ -8,8 +8,8 @@ The pipeline that turns an uploaded document into a list of unconfirmed
 - `ocr.py` — pdfplumber text extraction. No model in the loop.
 - `classify.py` Stage 1 + Stage 2 — filename keyword match and first-page
   header keyword match.
-- `extract.py` Stage 1 — per-doc-type regex/template parsers for known
-  high-confidence fields.
+- `extract.py` Stage 2 — per-doc-type regex/template cross-check parsers for
+  known high-confidence fields.
 - `confidence.py` — pure helpers; regex matches always score 1.0,
   LLM-derived confidence reads what the model returned (defaulting to a
   fixed value, never invented).
@@ -21,14 +21,16 @@ The pipeline that turns an uploaded document into a list of unconfirmed
   `model_router.generate_json(purpose="document_extraction")` only when
   filename + header heuristics fail. Strict JSON Schema is enforced. If
   the model cannot decide, the document is marked `unknown`.
-- `extract.py` Stage 2 — LLM residual extraction for fields the regex
-  templates missed. Uses `model_router.generate_json` with a strict
-  Pydantic-aligned JSON Schema. The model emits structured records with
-  `canonical_field`, `value`, `source_page`, `confidence`. Pages are
-  validated against the actual page set; values without a valid page are
-  dropped. The full extracted page text is sent to the model without a
-  local character cap, and the facts array schema has no item cap. Output
-  `model_name` carries provider:deployment for audit.
+- `extract.py` Stage 1 — LLM-primary extraction, one structured call per
+  page. Uses `model_router.generate_json` with a strict Pydantic-aligned
+  JSON Schema. The model emits structured records with `canonical_field`,
+  `value`, `source_page`, `snippet`, `confidence`. Pages are validated
+  against the actual page set, and snippets must be literal substrings of
+  the source page; otherwise the value is dropped. The full extracted page
+  text is sent to the model without a local character cap, and the facts
+  array schema has no item cap. Output `model_name` carries
+  provider:deployment for audit. Regex cross-checks supplement missed
+  fields and boost matching LLM values.
 
 ## What must never use AI
 

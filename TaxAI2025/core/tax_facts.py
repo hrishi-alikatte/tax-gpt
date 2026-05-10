@@ -22,6 +22,7 @@ class TaxFact(BaseModel):
     value: Any
     source_doc: str
     source_page: int
+    snippet: str | None = None
     source_bbox: tuple[int, int, int, int] | None = None
     confidence: float | None = None
     extraction_method: ExtractionMethod

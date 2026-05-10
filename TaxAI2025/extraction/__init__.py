@@ -5,7 +5,8 @@ Public entrypoint:
 
 The entrypoint branches on `config.DEMO_MODE`:
   - "replay" -> load canned facts from demo/scenarios/<DEMO_SCENARIO>/extracted.json
-  - otherwise -> live pipeline (pdfplumber + heuristics + LLM residual)
+  - otherwise -> live pipeline (pdfplumber + heuristics + LLM-primary extraction
+    with regex cross-checks)
 
 No extracted value ever leaves this layer with `confirmed_by_user=True`.
 That bit is owned by the confirmation UI (M3).
