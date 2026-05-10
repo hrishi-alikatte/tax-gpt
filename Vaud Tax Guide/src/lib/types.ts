@@ -23,7 +23,9 @@ export interface TaxFact {
   canonical_field: string;
   value: number | string | boolean;
   source_doc: string;
+  source_page: number;
   confidence: number;
+  extraction_method: "regex" | "pdf_text" | "ocr" | "llm_structured";
   confirmed_by_user: boolean;
 }
 

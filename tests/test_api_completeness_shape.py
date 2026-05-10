@@ -75,3 +75,23 @@ def test_completeness_severities_partition_into_three_ui_buckets() -> None:
         "If a new bucket is introduced, update the UI adapter in "
         "Vaud Tax Guide/src/lib/api.ts:checkCompleteness."
     )
+
+
+def test_completeness_endpoint_accepts_interview_synthetic_facts() -> None:
+    """Stage 5 folds interview answers into confirmed_facts before posting."""
+    client = TestClient(app)
+    payload = _empty_payload()
+    payload["confirmed_facts"] = [
+        {
+            "canonical_field": "meal_allowance.method",
+            "value": "canteen",
+            "source_doc": "interview",
+            "source_page": 1,
+            "confidence": 1,
+            "extraction_method": "pdf_text",
+            "confirmed_by_user": True,
+        }
+    ]
+
+    res = client.post("/api/completeness/check", json=payload)
+    assert res.status_code == 200, res.text

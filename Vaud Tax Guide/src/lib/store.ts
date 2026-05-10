@@ -138,7 +138,9 @@ export function buildCompletenessPayload(s: AppState) {
       canonical_field: "foreign_assets.declared",
       value: s.interview.foreign_assets,
       source_doc: "interview",
+      source_page: 1,
       confidence: 1,
+      extraction_method: "pdf_text",
       confirmed_by_user: true,
     });
   }
@@ -147,7 +149,9 @@ export function buildCompletenessPayload(s: AppState) {
       canonical_field: "pillar_2.buyback_declared",
       value: s.interview.lpp_buyback,
       source_doc: "interview",
+      source_page: 1,
       confidence: 1,
+      extraction_method: "pdf_text",
       confirmed_by_user: true,
     });
   }
@@ -156,7 +160,9 @@ export function buildCompletenessPayload(s: AppState) {
       canonical_field: "meal_allowance.method",
       value: s.interview.meal_allowance_method,
       source_doc: "interview",
+      source_page: 1,
       confidence: 1,
+      extraction_method: "pdf_text",
       confirmed_by_user: true,
     });
   }
