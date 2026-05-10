@@ -11,6 +11,25 @@ import type { CompletenessItem } from "@/lib/types";
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — VaudTaxAI" }] }),
   component: DashboardPage,
+  errorComponent: ({ error }) => (
+    <div className="rounded-md border border-destructive/40 bg-destructive/5 p-6">
+      <h2 className="text-lg font-semibold text-destructive">Dashboard error</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        The completeness dashboard failed to render. The check above runs against
+        <code className="mx-1 rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">
+          /api/completeness/check
+        </code>
+        on
+        <code className="mx-1 rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">
+          {(import.meta.env.VITE_API_BASE_URL as string) ?? "https://api.tax-gpt.online"}
+        </code>
+        — confirm the API is reachable.
+      </p>
+      <pre className="mt-3 overflow-x-auto rounded border bg-background p-3 text-xs">
+        {(error as Error).message}
+      </pre>
+    </div>
+  ),
 });
 
 function DashboardPage() {
