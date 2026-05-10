@@ -109,7 +109,7 @@ def extract_generic_facts(
     )
     user = (
         f"Filename: {record.filename}\n"
-        f"Document text:\n{text_blob[:8000]}\n\n"
+        f"Document text:\n{text_blob}\n\n"
         "Return generic facts for user review."
     )
     try:

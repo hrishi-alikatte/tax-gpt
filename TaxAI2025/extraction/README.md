@@ -26,7 +26,9 @@ The pipeline that turns an uploaded document into a list of unconfirmed
   Pydantic-aligned JSON Schema. The model emits structured records with
   `canonical_field`, `value`, `source_page`, `confidence`. Pages are
   validated against the actual page set; values without a valid page are
-  dropped. Output `model_name` carries provider:deployment for audit.
+  dropped. The full extracted page text is sent to the model without a
+  local character cap, and the facts array schema has no item cap. Output
+  `model_name` carries provider:deployment for audit.
 
 ## What must never use AI
 

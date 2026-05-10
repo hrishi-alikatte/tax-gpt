@@ -92,6 +92,29 @@ def test_unknown_filename_with_llm_decision_yields_llm_method(
     assert record.classifier_confidence == pytest.approx(0.82)
 
 
+def test_llm_classifier_receives_full_header_text(
+    azure_env: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from TaxAI2025.ai import model_router
+    from TaxAI2025.extraction.classify import _llm_classify
+
+    long_header = "A" * 1500 + "TAIL_MARKER_AFTER_1500"
+    captured_user_messages: list[str] = []
+
+    def fake_generate_json(messages, schema, purpose, *, temperature=0.0):  # noqa: ARG001
+        captured_user_messages.append(messages[1]["content"])
+        return {"document_type": "salary_certificate", "confidence": 0.82}
+
+    monkeypatch.setattr(model_router, "generate_json", fake_generate_json)
+
+    assert _llm_classify("opaque.pdf", long_header) == (
+        "salary_certificate",
+        pytest.approx(0.82),
+    )
+    assert "TAIL_MARKER_AFTER_1500" in captured_user_messages[0]
+    assert "truncated" not in captured_user_messages[0].lower()
+
+
 def test_llm_returning_invalid_type_is_treated_as_unknown(
     azure_env: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:

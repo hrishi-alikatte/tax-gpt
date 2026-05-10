@@ -381,7 +381,7 @@ def _stage_two_llm(
     user = (
         f"Document type: {record.document_type}\n"
         f"Target fields: {', '.join(target_fields)}\n\n"
-        f"Document text:\n{text_blob[:8000]}"
+        f"Document text:\n{text_blob}"
     )
     try:
         payload = model_router.generate_json(

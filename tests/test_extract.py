@@ -138,6 +138,35 @@ def test_llm_residual_only_runs_when_regex_misses_a_field(
     assert "salary.ahv_iv_eo_chf" in schema_fields
 
 
+def test_llm_residual_receives_full_page_text(
+    azure_and_groq_env: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    long_text = "A" * 8000 + "TAIL_MARKER_AFTER_8000"
+    pages = [PageText(pdf_page=1, text=long_text)]
+    captured_user_messages: list[str] = []
+
+    def fake_generate_json(messages, schema, purpose, *, temperature=0.0):  # noqa: ARG001
+        captured_user_messages.append(messages[1]["content"])
+        return {"facts": []}
+
+    from TaxAI2025.ai import model_router
+
+    monkeypatch.setattr(model_router, "generate_json", fake_generate_json)
+
+    from TaxAI2025.extraction.extract import extract_facts
+
+    assert extract_facts(_record("pillar_3a_certificate"), pages) == []
+    assert "TAIL_MARKER_AFTER_8000" in captured_user_messages[0]
+
+
+def test_llm_residual_schema_has_no_fact_item_cap() -> None:
+    from TaxAI2025.extraction.extract import _llm_residual_schema
+
+    schema = _llm_residual_schema(["pillar_3a.annual_contribution_chf"])
+    facts_schema = schema["properties"]["facts"]
+    assert "maxItems" not in facts_schema
+
+
 def test_llm_facts_with_invalid_pages_are_dropped(
     azure_and_groq_env: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:

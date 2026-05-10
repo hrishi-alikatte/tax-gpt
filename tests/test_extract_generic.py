@@ -81,6 +81,27 @@ def test_generic_extraction_drops_invalid_pages(
     assert extract_generic_facts(_unknown_record(), [PageText(pdf_page=1, text="x")]) == []
 
 
+def test_generic_extraction_receives_full_page_text(
+    azure_and_groq_env: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from TaxAI2025.ai import model_router
+    from TaxAI2025.extraction.generic import extract_generic_facts
+
+    captured_user_messages: list[str] = []
+
+    def fake_generate_json(messages, schema, purpose, *, temperature=0.0):  # noqa: ARG001
+        captured_user_messages.append(messages[1]["content"])
+        return {"facts": []}
+
+    monkeypatch.setattr(model_router, "generate_json", fake_generate_json)
+
+    long_text = "A" * 8000 + "TAIL_MARKER_AFTER_8000"
+    assert extract_generic_facts(
+        _unknown_record(), [PageText(pdf_page=1, text=long_text)]
+    ) == []
+    assert "TAIL_MARKER_AFTER_8000" in captured_user_messages[0]
+
+
 def test_generic_extraction_skips_known_document_types(
     azure_and_groq_env: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:

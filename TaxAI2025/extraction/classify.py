@@ -330,7 +330,7 @@ def _llm_classify(filename: str, header_text: str) -> tuple[DocumentType, float]
     )
     user = (
         f"Filename: {filename}\n"
-        f"First-page text (truncated):\n{header_text[:1500]}\n\n"
+        f"First-page text:\n{header_text}\n\n"
         "Return JSON with document_type and confidence."
     )
     try:
