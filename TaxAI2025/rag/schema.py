@@ -8,7 +8,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 SourceAuthority = Literal[
@@ -90,6 +90,8 @@ class RetrievalResult(BaseModel):
 
 class GroundedAnswer(BaseModel):
     """Output of `answer_with_citations`. UI and audit consume this."""
+
+    model_config = ConfigDict(protected_namespaces=())
 
     answer_en: str = Field(default="")
     citations: list[RagCitation] = Field(default_factory=list)
