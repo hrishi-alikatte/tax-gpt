@@ -21,7 +21,7 @@ from TaxAI2025.extraction import extract_from_upload
 from TaxAI2025.completeness.engine import evaluate
 from TaxAI2025.completeness.schema import Finding
 from TaxAI2025.interview.engine import select_questions
-from TaxAI2025.interview.schema import OpenQuestion
+from TaxAI2025.interview.schema import OpenQuestionOut
 from TaxAI2025.rag.explain import answer_with_citations
 from TaxAI2025.rag.schema import GroundedAnswer
 
@@ -56,6 +56,11 @@ class RagRequest(BaseModel):
     question: str
 
 
+@app.get("/healthz", include_in_schema=False)
+def healthz() -> dict[str, str]:
+    return {"status": "ok"}
+
+
 @app.post("/api/extract")
 async def api_extract(file: UploadFile = File(...)) -> dict[str, Any]:
     """Process an uploaded PDF and return unconfirmed TaxFacts."""
@@ -84,10 +89,11 @@ async def api_completeness_check(req: CompletenessRequest) -> list[Finding]:
     return evaluate(req.profile, req.confirmed_facts)
 
 
-@app.post("/api/interview/generate", response_model=list[OpenQuestion])
-async def api_interview_generate(req: InterviewRequest) -> list[OpenQuestion]:
+@app.post("/api/interview/generate", response_model=list[OpenQuestionOut])
+async def api_interview_generate(req: InterviewRequest) -> list[OpenQuestionOut]:
     """Select adaptive interview questions based on the profile and facts."""
-    return select_questions(req.profile, req.confirmed_facts)
+    questions = select_questions(req.profile, req.confirmed_facts)
+    return [OpenQuestionOut.from_question(q) for q in questions]
 
 
 @app.post("/api/rag/explain", response_model=GroundedAnswer)
