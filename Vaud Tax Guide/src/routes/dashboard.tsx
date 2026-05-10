@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageTransition } from "@/components/PageTransition";
@@ -35,16 +36,38 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardPage() {
   const navigate = useNavigate();
   const setCompleteness = useAppStore((s) => s.setCompleteness);
-  const payload = useAppStore(buildCompletenessPayload);
+
+  // Subscribe to primitive store slices; each has a stable reference until
+  // its own contents change. `buildCompletenessPayload` MUST NOT be passed
+  // directly to `useAppStore` — it constructs a new object on every call,
+  // which would flip the React Query queryKey identity every render and
+  // cause an infinite refetch loop (React error #185).
+  const profile = useAppStore((s) => s.profile);
+  const documents = useAppStore((s) => s.documents);
+  const interview = useAppStore((s) => s.interview);
+
+  const payload = useMemo(
+    () => buildCompletenessPayload({ profile, documents, interview } as never),
+    [profile, documents, interview],
+  );
+
+  // Hash the payload by content so the query refetches when fact set or
+  // profile actually changes, not when an upstream selector returned a
+  // structurally-equal but referentially-new object.
+  const queryHash = useMemo(() => JSON.stringify(payload), [payload]);
 
   const { data, isLoading, error, refetch, isFetching } = useQuery({
-    queryKey: ["completeness", payload],
-    queryFn: async () => {
-      const res = await checkCompleteness(payload);
-      setCompleteness(res);
-      return res;
-    },
+    queryKey: ["completeness", queryHash],
+    queryFn: () => checkCompleteness(payload),
   });
+
+  // Mirror the latest result into the global store for downstream
+  // consumers (copilot, analytics). Doing this here instead of inside
+  // `queryFn` removes the loop: a store write no longer changes any input
+  // that the query depends on.
+  useEffect(() => {
+    if (data) setCompleteness(data);
+  }, [data, setCompleteness]);
 
   return (
     <PageTransition>
