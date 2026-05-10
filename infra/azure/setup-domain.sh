@@ -25,13 +25,24 @@ az containerapp env certificate create \
   --hostname "$HOST" \
   --validation-method CNAME || true
 
-echo ">>> Polling cert provisioning state..."
-for i in $(seq 1 30); do
-  state=$(az containerapp env certificate show \
-    --resource-group "$RG" --name "$ENV" \
-    --certificate-name "$CERT" \
-    --query "properties.provisioningState" -o tsv 2>/dev/null || echo "Pending")
-  echo "  attempt $i/30: $state"
+cert_state () {
+  az containerapp env certificate list \
+    -g "$RG" -n "$ENV" \
+    --query "[?name=='$CERT'].properties.provisioningState | [0]" \
+    -o tsv 2>/dev/null || echo "Pending"
+}
+
+cert_id () {
+  az containerapp env certificate list \
+    -g "$RG" -n "$ENV" \
+    --query "[?name=='$CERT'].id | [0]" \
+    -o tsv
+}
+
+echo ">>> Polling cert provisioning state (up to 15 min)..."
+for i in $(seq 1 45); do
+  state=$(cert_state)
+  echo "  attempt $i/45: $state"
   case "$state" in
     Succeeded) break ;;
     Failed) echo "Cert issuance failed. Inspect in portal."; exit 1 ;;
@@ -39,9 +50,11 @@ for i in $(seq 1 30); do
   sleep 20
 done
 
-CERT_ID=$(az containerapp env certificate show \
-  --resource-group "$RG" --name "$ENV" \
-  --certificate-name "$CERT" --query id -o tsv)
+CERT_ID=$(cert_id)
+if [[ -z "$CERT_ID" ]]; then
+  echo "Cert ID empty after polling — aborting." >&2
+  exit 1
+fi
 
 echo ">>> Binding cert to hostname"
 az containerapp hostname bind \
@@ -51,7 +64,16 @@ az containerapp hostname bind \
   --certificate "$CERT_ID" \
   --validation-method CNAME
 
-echo ">>> Done. Verifying..."
+echo ">>> Polling binding state (up to 3 min)..."
+for i in $(seq 1 18); do
+  bt=$(az containerapp hostname list -n "$APP" -g "$RG" \
+    --query "[?name=='$HOST'].bindingType | [0]" -o tsv)
+  echo "  attempt $i/18: $bt"
+  [[ "$bt" == "SniEnabled" ]] && break
+  sleep 10
+done
+
+echo ">>> Final state:"
 az containerapp hostname list -n "$APP" -g "$RG" -o table
 echo ""
 echo "Try: curl -I https://${HOST}/healthz"
