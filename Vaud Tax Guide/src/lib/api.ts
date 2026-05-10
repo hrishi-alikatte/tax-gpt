@@ -71,6 +71,15 @@ function findingToItem(f: BackendFinding) {
   };
 }
 
+function confirmedFactToItem(f: TaxFact) {
+  return {
+    code: f.canonical_field,
+    label: f.canonical_field,
+    reason: `Confirmed value: ${String(f.value)}`,
+    suggested_doc: f.source_doc,
+  };
+}
+
 export async function checkCompleteness(payload: {
   profile: UserProfile;
   confirmed_facts: TaxFact[];
@@ -92,11 +101,9 @@ export async function checkCompleteness(payload: {
     return {
       missing: findings.filter((f) => f.severity === "blocker").map(findingToItem),
       likely_missing: findings
-        .filter((f) => f.severity === "likely_missing")
+        .filter((f) => f.severity === "likely_missing" || f.severity === "nice_to_have")
         .map(findingToItem),
-      complete: findings
-        .filter((f) => f.severity === "nice_to_have")
-        .map(findingToItem),
+      complete: payload.confirmed_facts.map(confirmedFactToItem),
     };
   }
   return {
