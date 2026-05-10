@@ -117,6 +117,16 @@ def rag_index_dir() -> Path:
     return Path(f"./chroma_db_{ACTIVE_RAG_CORPUS}_{suffix}")
 
 
+def rag_auto_build_index() -> bool:
+    """Whether production may build the Chroma RAG index when it is absent.
+
+    Tests and local offline runs default to false so they never make embedding
+    calls unexpectedly. The deployed API container enables this explicitly.
+    """
+    raw = (_optional("RAG_AUTO_BUILD_INDEX", "false") or "false").strip().lower()
+    return raw in {"1", "true", "yes", "on"}
+
+
 # ----- Corpus path resolution -----
 
 REPO_ROOT = Path(__file__).resolve().parents[2]

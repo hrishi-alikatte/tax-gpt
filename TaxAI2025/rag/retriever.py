@@ -135,8 +135,17 @@ def get_default_retriever() -> "ChromaRetriever | None":
     """
     try:
         index_dir = config.rag_index_dir()
-        if index_is_compatible(index_dir, _expected_stamp()):
+        expected = _expected_stamp()
+        if index_is_compatible(index_dir, expected):
             return ChromaRetriever()
+        if config.rag_auto_build_index():
+            from TaxAI2025.rag import ingest
+
+            logger.info("RAG index missing or stale at %s; building it now.", index_dir)
+            ingest.build_index(force_rebuild=False, index_dir=index_dir)
+            if index_is_compatible(index_dir, expected):
+                return ChromaRetriever()
+            logger.warning("RAG index build finished but stamp is still incompatible.")
     except Exception as e:  # noqa: BLE001 — config or stamp unreadable
-        logger.debug("Default retriever unavailable: %s", e)
+        logger.warning("Default retriever unavailable: %s", e)
     return None

@@ -167,3 +167,34 @@ def test_get_default_retriever_returns_none_when_index_missing(
     from TaxAI2025.rag.retriever import get_default_retriever
 
     assert get_default_retriever() is None
+
+
+def test_get_default_retriever_lazy_builds_index_when_enabled(
+    azure_env: None, monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    """Production containers can build the ephemeral Chroma index on first use."""
+    from TaxAI2025.rag import ingest
+    from TaxAI2025.rag import retriever as retriever_module
+
+    index_dir = tmp_path / "rag-index"
+    checks = iter([False, True])
+    built: list[str] = []
+
+    monkeypatch.setattr(retriever_module.config, "rag_index_dir", lambda: index_dir)
+    monkeypatch.setattr(retriever_module.config, "rag_auto_build_index", lambda: True)
+    monkeypatch.setattr(
+        retriever_module,
+        "index_is_compatible",
+        lambda _index_dir, _stamp: next(checks),
+    )
+
+    def fake_build_index(*, force_rebuild, index_dir, **_kwargs):  # noqa: ANN001
+        built.append(f"{force_rebuild}:{index_dir}")
+        return {"status": "built"}
+
+    monkeypatch.setattr(ingest, "build_index", fake_build_index)
+
+    retriever = retriever_module.get_default_retriever()
+
+    assert retriever is not None
+    assert built == [f"False:{index_dir}"]
