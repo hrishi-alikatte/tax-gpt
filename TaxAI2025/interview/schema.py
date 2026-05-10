@@ -4,6 +4,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Literal, TYPE_CHECKING
 
+from pydantic import BaseModel
+
 if TYPE_CHECKING:
     from TaxAI2025.core.tax_facts import TaxFact
     from TaxAI2025.ui.state import UserProfile
@@ -42,4 +44,41 @@ class OpenQuestion:
         return f"[Vaud 2025 Instructions p.{self.pdf_page}]"
 
 
-__all__ = ["OpenQuestion", "QuestionSeverity", "QuestionTrigger", "SourceLevel"]
+class OpenQuestionOut(BaseModel):
+    """Serializable wire-format of OpenQuestion for the HTTP API.
+
+    Drops the non-serializable `ask_when` Callable. Engine code keeps using
+    OpenQuestion (dataclass with trigger). The route layer converts via
+    `OpenQuestionOut.from_question`.
+    """
+
+    id: str
+    question_en: str
+    why_en: str
+    asks_for: list[str]
+    source_doc: str
+    pdf_page: int | None
+    source_level: SourceLevel
+    severity: QuestionSeverity
+
+    @classmethod
+    def from_question(cls, q: "OpenQuestion") -> "OpenQuestionOut":
+        return cls(
+            id=q.id,
+            question_en=q.question_en,
+            why_en=q.why_en,
+            asks_for=list(q.asks_for),
+            source_doc=q.source_doc,
+            pdf_page=q.pdf_page,
+            source_level=q.source_level,
+            severity=q.severity,
+        )
+
+
+__all__ = [
+    "OpenQuestion",
+    "OpenQuestionOut",
+    "QuestionSeverity",
+    "QuestionTrigger",
+    "SourceLevel",
+]
