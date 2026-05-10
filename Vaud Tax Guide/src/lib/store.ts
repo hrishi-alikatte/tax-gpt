@@ -130,7 +130,11 @@ export const selectAllFactsConfirmed = (s: AppState): boolean => {
  * and call this inside a `useMemo`. See dashboard.tsx for the pattern.
  */
 export function buildCompletenessPayload(s: AppState) {
-  const confirmed = selectConfirmedFacts(s);
+  const confirmed = selectConfirmedFacts(s).map((f) => ({
+    ...f,
+    source_page: f.source_page ?? 1,
+    extraction_method: f.extraction_method ?? "pdf_text",
+  }));
   const synthetic: TaxFact[] = [];
 
   if (s.interview.foreign_assets !== null) {
