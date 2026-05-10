@@ -1,0 +1,13 @@
+{
+  "answer_en": "Ordinary taxation (imposition ordinaire) means that your taxes are calculated based on a full tax declaration of your income and assets, rather than being deducted at source. In Canton Vaud, holders of a C permit are subject to this regime and must file a complete return annually [Vaud 2025 Instructions p.5].",
+  "citations": [
+    {
+      "source_id": "vd_2025_instructions",
+      "source_title": "Instructions générales sur la déclaration d'impôt 2025 (Canton de Vaud)",
+      "pdf_page": 5,
+      "token": "[Vaud 2025 Instructions p.5]"
+    }
+  ],
+  "refused": false,
+  "model_name": "replay:fixture"
+}

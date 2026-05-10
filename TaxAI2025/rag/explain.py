@@ -22,6 +22,7 @@ from datetime import datetime
 from typing import Protocol, Sequence
 
 from TaxAI2025.ai import model_router
+from TaxAI2025.core import config
 from TaxAI2025.rag.schema import (
     GroundedAnswer,
     RagChunk,
@@ -228,15 +229,29 @@ def answer_with_citations(
     question: str,
     retriever: Retriever | None = None,
 ) -> GroundedAnswer:
+    # 1. Check for replay mode (bypasses live retrieval/LLM)
+    if config.DEMO_MODE == "replay":
+        from TaxAI2025.rag.replay import load_replay_answer
+
+        canned = load_replay_answer(question)
+        if canned is not None:
+            return canned
+        return _refuse(reason="no_replay_fixture_found")
+
     if _is_refusal_by_intent(question):
         return _refuse(reason="refusal_by_intent")
 
     retr = _resolve_retriever(retriever)
+    
+    # Identify if we are using the null retriever (usually a config/index issue)
+    is_null_retriever = isinstance(retr, _NullRetriever)
+    
     chunks = retr.retrieve(question, k=4)
     retrieval = RetrievalResult(chunks=list(chunks), query=question)
 
     if not chunks:
-        return _refuse(reason="no_chunks_retrieved", retrieval=retrieval)
+        reason = "retriever_missing_or_unconfigured" if is_null_retriever else "no_chunks_retrieved"
+        return _refuse(reason=reason, retrieval=retrieval)
 
     # Active source enforcement: drop any chunk not from an active source.
     active_source_ids = {s.source_id for s in source_registry.all_active_sources()}

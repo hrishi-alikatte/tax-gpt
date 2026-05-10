@@ -1,0 +1,13 @@
+{
+  "answer_en": "Pillar 3a (3e pilier A) is a private, tax-advantaged pension scheme in Switzerland. For employed residents in Canton Vaud, annual contributions to an approved Pillar 3a account are fully deductible from your taxable income up to a specific annual ceiling [Vaud 2025 Instructions p.42].",
+  "citations": [
+    {
+      "source_id": "vd_2025_instructions",
+      "source_title": "Instructions générales sur la déclaration d'impôt 2025 (Canton de Vaud)",
+      "pdf_page": 42,
+      "token": "[Vaud 2025 Instructions p.42]"
+    }
+  ],
+  "refused": false,
+  "model_name": "replay:fixture"
+}

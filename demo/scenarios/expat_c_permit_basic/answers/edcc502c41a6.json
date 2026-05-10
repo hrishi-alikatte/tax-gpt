@@ -1,0 +1,13 @@
+{
+  "answer_en": "Bank balances as of December 31 must be declared because Switzerland taxes both income and net wealth (état de la fortune). Your total assets, including worldwide bank accounts, are used to determine your wealth tax for the 2025 period [Vaud 2025 Instructions p.23].",
+  "citations": [
+    {
+      "source_id": "vd_2025_instructions",
+      "source_title": "Instructions générales sur la déclaration d'impôt 2025 (Canton de Vaud)",
+      "pdf_page": 23,
+      "token": "[Vaud 2025 Instructions p.23]"
+    }
+  ],
+  "refused": false,
+  "model_name": "replay:fixture"
+}

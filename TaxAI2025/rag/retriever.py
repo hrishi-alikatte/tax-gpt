@@ -147,5 +147,8 @@ def get_default_retriever() -> "ChromaRetriever | None":
                 return ChromaRetriever()
             logger.warning("RAG index build finished but stamp is still incompatible.")
     except Exception as e:  # noqa: BLE001 — config or stamp unreadable
-        logger.warning("Default retriever unavailable: %s", e)
+        logger.error(
+            "CRITICAL: Default retriever unavailable. Check .env for "
+            "AZURE_OPENAI_API_KEY and RAG_INDEX_DIR. Error: %s", e
+        )
     return None

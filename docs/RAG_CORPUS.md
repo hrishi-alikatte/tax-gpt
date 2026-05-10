@@ -129,3 +129,15 @@ Refusal text format:
 - `Q5` — *"Optimize my taxes."* → no retrieval; refuse by intent.
 
 These five questions are the M1 RAG acceptance bar.
+
+## 14. Demo Replay Mode (DEMO_MODE=replay)
+
+To allow the copilot to be demoed without live Azure API keys or network access, a "Replay Mode" is available.
+
+- **Trigger:** Set `DEMO_MODE=replay` in the environment.
+- **Fixture Path:** `demo/scenarios/<scenario>/answers/<question_hash>.json`.
+- **Behavior:**
+  - The question is normalized and hashed (SHA-256, first 12 chars).
+  - If a matching JSON file exists, it is returned as the `GroundedAnswer`.
+  - If no fixture matches, the system refuses with `no_replay_fixture_found`.
+- **Pre-recorded answers:** Replay answers for the Golden Questions (Q1–Q4) are provided in the `expat_c_permit_basic` scenario.
