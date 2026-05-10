@@ -7,7 +7,7 @@ import type {
 
 const API_BASE =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
-  "https://vaudtaxai-web-410743045655.europe-west6.run.app";
+  "https://api.tax-gpt.online";
 
 export interface ExtractResponse {
   facts: TaxFact[];
@@ -51,6 +51,26 @@ export function extractDocument(
   });
 }
 
+interface BackendFinding {
+  rule_id: string;
+  title_en: string;
+  message_en: string;
+  asks_for: string[];
+  source_doc: string;
+  pdf_page: number | null;
+  severity: "blocker" | "likely_missing" | "nice_to_have";
+  verification_status: string;
+}
+
+function findingToItem(f: BackendFinding) {
+  return {
+    code: f.rule_id,
+    label: f.title_en,
+    reason: f.message_en,
+    suggested_doc: f.asks_for?.[0],
+  };
+}
+
 export async function checkCompleteness(payload: {
   profile: UserProfile;
   confirmed_facts: TaxFact[];
@@ -62,6 +82,23 @@ export async function checkCompleteness(payload: {
   });
   if (!res.ok) throw new Error(`Completeness check failed (${res.status})`);
   const data = await res.json();
+
+  // Backend returns list[Finding] (canonical shape from main.py).
+  // Partition by severity and remap field names to the UI's
+  // CompletenessItem shape. Also tolerate the legacy categorized
+  // object shape for forward/backward safety.
+  if (Array.isArray(data)) {
+    const findings = data as BackendFinding[];
+    return {
+      missing: findings.filter((f) => f.severity === "blocker").map(findingToItem),
+      likely_missing: findings
+        .filter((f) => f.severity === "likely_missing")
+        .map(findingToItem),
+      complete: findings
+        .filter((f) => f.severity === "nice_to_have")
+        .map(findingToItem),
+    };
+  }
   return {
     missing: data.missing ?? [],
     likely_missing: data.likely_missing ?? [],
