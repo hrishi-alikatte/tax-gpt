@@ -1,7 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "tanstack-start-app",
+  "name": "vaudtaxai-ui",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/server.ts",
+  "routes": [
+    { "pattern": "tax-gpt.online", "custom_domain": true },
+    { "pattern": "www.tax-gpt.online", "custom_domain": true }
+  ],
+  "observability": {
+    "enabled": true
+  }
 }
