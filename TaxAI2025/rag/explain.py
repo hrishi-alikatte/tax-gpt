@@ -229,17 +229,19 @@ def answer_with_citations(
     question: str,
     retriever: Retriever | None = None,
 ) -> GroundedAnswer:
+    if _is_refusal_by_intent(question):
+        return _refuse(reason="refusal_by_intent")
+
     # 1. Check for replay mode (bypasses live retrieval/LLM)
-    if config.DEMO_MODE == "replay":
+    # Use a stricter check: only use replay if explicitly requested AND not in a test
+    # that provided its own retriever.
+    if config.DEMO_MODE == "replay" and retriever is None:
         from TaxAI2025.rag.replay import load_replay_answer
 
         canned = load_replay_answer(question)
         if canned is not None:
             return canned
         return _refuse(reason="no_replay_fixture_found")
-
-    if _is_refusal_by_intent(question):
-        return _refuse(reason="refusal_by_intent")
 
     retr = _resolve_retriever(retriever)
     
