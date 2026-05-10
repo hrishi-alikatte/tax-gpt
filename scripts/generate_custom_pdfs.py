@@ -110,7 +110,7 @@ def create_pillar3a_certificate(filename: Path) -> None:
     c.drawString(50, height - 130, "N° de compte: 3A-VD-118273")
 
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, height - 170, "Cotisation versée pour l'année 2025")
+    c.drawString(50, height - 170, "Cotisation annuelle 2025")
     c.drawString(450, height - 170, "CHF 7'056.00")
     c.setFont("Helvetica", 10)
     c.drawString(50, height - 195, "(Plafond fédéral salarié 2025: CHF 7'258.—)")
@@ -130,7 +130,7 @@ def create_daycare_invoice(filename: Path) -> None:
     c.drawString(50, height - 130, f"Enfant: {CHILD}")
 
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, height - 170, "Total des frais de garde payés en 2025")
+    c.drawString(50, height - 170, "Montant total payé en 2025")
     c.drawString(450, height - 170, "CHF 14'400.00")
     c.setFont("Helvetica", 10)
     c.drawString(50, height - 195, "12 mensualités, structure d'accueil reconnue par l'État de Vaud.")
@@ -170,7 +170,7 @@ def create_transport_pass(filename: Path) -> None:
     c.drawString(50, height - 130, "Type: Abonnement annuel Mobilis zones 11+12")
 
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, height - 170, "Coût total 2025")
+    c.drawString(50, height - 170, "Coût annuel 2025")
     c.drawString(450, height - 170, "CHF 1'140.00")
 
     _footer(c)
@@ -188,7 +188,7 @@ def create_donation_receipt(filename: Path) -> None:
     c.drawString(50, height - 130, "Reçu n°: CR-2025-00871")
 
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, height - 170, "Don total versé en 2025")
+    c.drawString(50, height - 170, "Montant du don 2025")
     c.drawString(450, height - 170, "CHF 600.00")
     c.setFont("Helvetica", 10)
     c.drawString(
@@ -221,15 +221,19 @@ def create_medical_bills(filename: Path) -> None:
     _footer(c)
 
 
+# Filenames embed a keyword that the classifier's filename heuristic
+# will match (TaxAI2025/extraction/classify.py::_FILENAME_KEYWORDS).
+# That makes classification deterministic and side-steps the slower
+# pdfplumber + LLM fallback path.
 SPEC: list[tuple[str, callable]] = [
     ("01_certificat_salaire.pdf", create_salary_certificate),
-    ("02_assurance_maladie.pdf", create_health_insurance_premium),
+    ("02_prime_assurance_maladie.pdf", create_health_insurance_premium),
     ("03_pilier_3a.pdf", create_pillar3a_certificate),
     ("04_garderie.pdf", create_daycare_invoice),
     ("05_releve_bcv.pdf", create_bank_year_end_statement),
     ("06_abonnement_cff.pdf", create_transport_pass),
-    ("07_attestation_don.pdf", create_donation_receipt),
-    ("08_frais_medicaux.pdf", create_medical_bills),
+    ("07_attestation-don.pdf", create_donation_receipt),
+    ("08_facture_medical.pdf", create_medical_bills),
 ]
 
 

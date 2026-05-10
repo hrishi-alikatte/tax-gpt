@@ -122,6 +122,12 @@ export const selectAllFactsConfirmed = (s: AppState): boolean => {
 /**
  * Merges interview answers into the confirmed_facts array as synthetic TaxFacts.
  * Backend accepts only { profile, confirmed_facts } — interview is folded in here.
+ *
+ * NOTE: returns a fresh object literal each call. DO NOT pass this directly to
+ * `useAppStore(buildCompletenessPayload)` — Zustand's default `===` equality
+ * will see a new reference every render and cause unbounded re-renders.
+ * Instead, subscribe to the primitive slices (profile/documents/interview)
+ * and call this inside a `useMemo`. See dashboard.tsx for the pattern.
  */
 export function buildCompletenessPayload(s: AppState) {
   const confirmed = selectConfirmedFacts(s);
