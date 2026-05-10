@@ -21,8 +21,8 @@ bound=$(az containerapp hostname list -n "$APP" -g "$RG" \
 pass "hostname binding = SniEnabled"
 
 echo "=== Managed cert state ==="
-state=$(az containerapp env certificate show -g "$RG" --name "$ENV" \
-  --certificate-name "$CERT" --query "properties.provisioningState" -o tsv 2>/dev/null || echo "Missing")
+state=$(az containerapp env certificate list -g "$RG" -n "$ENV" \
+  --query "[?name=='$CERT'].properties.provisioningState | [0]" -o tsv 2>/dev/null || echo "Missing")
 [[ "$state" == "Succeeded" ]] || fail "cert $CERT state: $state"
 pass "managed cert = Succeeded"
 
