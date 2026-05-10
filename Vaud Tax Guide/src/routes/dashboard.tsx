@@ -93,7 +93,7 @@ function DashboardPage() {
       )}
 
       {data && (
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid items-start gap-4 md:grid-cols-3">
           <Column
             tone="missing"
             icon={<AlertCircle className="h-4 w-4 text-destructive" />}
@@ -157,15 +157,17 @@ function Column({
         <ul className="space-y-2">
           {items.map((it) => (
             <li key={it.code} className="rounded-md border bg-background p-3">
-              <div className="flex items-center gap-2">
-                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+              <div className="flex min-w-0 items-start gap-2">
+                <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
                   {it.code}
                 </span>
-                <span className="text-sm font-medium">{it.label}</span>
+                <span className="min-w-0 flex-1 break-all text-sm font-medium">{it.label}</span>
               </div>
-              {it.reason && <p className="mt-1 text-xs text-muted-foreground">{it.reason}</p>}
+              {it.reason && (
+                <p className="mt-1 break-all text-xs text-muted-foreground">{it.reason}</p>
+              )}
               {it.suggested_doc && (
-                <p className="mt-1 text-xs text-primary">Suggested: {it.suggested_doc}</p>
+                <p className="mt-1 break-all text-xs text-primary">Suggested: {it.suggested_doc}</p>
               )}
             </li>
           ))}
