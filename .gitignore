@@ -48,6 +48,10 @@ build/
 node_modules/
 .firebase/
 uploads/
+.lovable/
+.tanstack/
+*.skill
+AGENTS.md
 
 # Claude Code worktrees (created locally; not part of source)
 .claude/worktrees/
