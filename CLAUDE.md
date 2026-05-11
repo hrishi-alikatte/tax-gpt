@@ -93,6 +93,10 @@ VaudTaxAI/
 │   ├── DEMO_SCRIPT.md
 │   ├── RAG_CORPUS.md          # corpus + citation policy
 │   └── RAG_TOPICS.md          # topic catalogue + EN↔FR mapping
+├── Vaud Tax Guide/            # Lovable Web UI (React + TanStack Start)
+│   ├── src/
+│   ├── package.json
+│   └── wrangler.jsonc
 ├── TaxAI2025/
 │   ├── ai/
 │   │   └── model_router.py    # provider-agnostic routing (Azure / Groq)
@@ -134,22 +138,30 @@ Future target modules (to be added during implementation phases — see `docs/AR
 First-time setup (after cloning):
 
 ```bash
+# Backend setup
 python -m venv .venv
 .venv/bin/pip install -r requirements.txt
 .venv/bin/pip install -e .
 cp .env.example .env  # then fill values
+
+# Frontend setup
+cd "Vaud Tax Guide"
+npm install
 ```
 
 `pip install -e .` reads `pyproject.toml` and makes `TaxAI2025` and `demo`
 importable from any directory — no more `PYTHONPATH=.`.
 
 ```bash
-# Run the Flet app (six-screen confirmation flow)
+# Run the Web UI (Lovable/React)
+cd "Vaud Tax Guide" && npm run dev
+
+# Run the Backend API
 python main.py
-DEMO_MODE=replay python main.py     # walks Sarah end-to-end without live LLM at upload
 
 # Tests (no live network; stubs only)
 pytest
+```
 
 # One-shot live Azure smoke (manual; never runs in CI)
 python scripts/smoke_rag_azure.py fixture

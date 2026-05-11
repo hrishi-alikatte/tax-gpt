@@ -22,16 +22,12 @@ Plus: VaudTax field mapping (English ↔ FR ↔ code) and an audit log.
 
 ```
 VaudTaxAI/
-├── apps/
-│   └── desktop/              # Flet UI (current Flet stack continues)
-│       ├── main.py
-│       └── views/
-│           ├── intake_view.py
-│           ├── upload_view.py
-│           ├── extracted_view.py
-│           ├── completeness_view.py
-│           ├── mapping_view.py
-│           └── explain_view.py
+├── Vaud Tax Guide/           # Lovable Web UI (React + TanStack Start)
+│   ├── src/
+│   │   ├── routes/           # TanStack Router paths
+│   │   ├── components/       # Shadcn/Lovable components
+│   │   └── lib/              # API clients & state
+├── TaxAI2025/                # Backend API (FastAPI/Python)
 ├── core/
 │   ├── schema/
 │   │   ├── profile.py            # canonical UserProfile

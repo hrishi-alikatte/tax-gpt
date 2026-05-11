@@ -35,25 +35,37 @@ For more details, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/DOM
 ## 🛠️ Getting Started
 
 ### Prerequisites
-- Python 3.10+
-- [Flet](https://flet.dev/) (for UI)
+- Python 3.10+ (for API/Backend)
+- Node.js & Bun (for Web UI)
 - API Keys for Azure OpenAI or Groq (see `.env.example`)
 
 ### Installation
 1. Clone the repository.
-2. Install dependencies:
+2. Install Backend dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-3. Set up your environment variables:
+3. Install Frontend dependencies:
+   ```bash
+   cd "Vaud Tax Guide"
+   npm install
+   ```
+4. Set up your environment variables:
    ```bash
    cp .env.example .env
    # Add your API keys to .env
    ```
 
 ### Running the Application
+**Backend API:**
 ```bash
 python main.py
+```
+
+**Web UI (Lovable/React):**
+```bash
+cd "Vaud Tax Guide"
+npm run dev
 ```
 
 ### Running Tests

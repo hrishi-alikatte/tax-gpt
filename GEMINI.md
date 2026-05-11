@@ -47,7 +47,7 @@ For specialized tasks, refer to the following roles (inspired by the Claude/Code
 - **Domain/Modeling**: Follow `.claude/agents/vaud-tax-domain-analyst.md`.
 - **Extraction/OCR**: Follow `.claude/agents/ai-extraction-engineer.md`.
 - **Completeness Rules**: Follow `.claude/agents/completeness-engine-designer.md`.
-- **UI/Demo Flow**: Follow `.claude/agents/frontend-demo-engineer.md`.
+- **UI/Demo Flow**: Follow `.claude/agents/frontend-demo-engineer.md` (Lovable/React).
 - **Tests/Quality**: Follow `.claude/agents/test-quality-reviewer.md`.
 - **Security/Privacy**: Follow `.claude/agents/security-privacy-reviewer.md`.
 - **Architecture Audits**: Follow `.claude/agents/repo-architect.md`.
@@ -57,8 +57,12 @@ Before edits touching tax logic, schema, RAG, extraction, completeness, or persi
 ## 6. Common Commands
 
 ```bash
-# Run the Flet app (desktop mode)
+# Run the Web UI (Lovable/React)
+cd "Vaud Tax Guide" && npm run dev
+
+# Run the Backend API
 python main.py
+```
 
 # Run tests
 pytest
