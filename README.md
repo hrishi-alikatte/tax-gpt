@@ -2,6 +2,8 @@
 
 **English-first, Vaud-only tax filing copilot for C-permit expat employees in Canton Vaud, Switzerland.**
 
+🚀 **Live at: [tax-gpt.online](https://tax-gpt.online)**
+
 VaudTaxAI is a bounded copilot designed to help taxpayers navigate the Vaud tax process. It simplifies document extraction, identifies missing declarations or deductions, and explains requirements using official Vaud sources.
 
 ## 🚀 Key Features
