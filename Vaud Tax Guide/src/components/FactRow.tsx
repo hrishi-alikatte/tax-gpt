@@ -8,7 +8,17 @@ import { useAppStore } from "@/lib/store";
 import { formatFactValue, lookupCode } from "@/lib/vaud-codes";
 import type { TaxFact } from "@/lib/types";
 
-export function FactRow({ docId, fact }: { docId: string; fact: TaxFact }) {
+export function FactRow({
+  docId,
+  fact,
+  selected = false,
+  onSelect,
+}: {
+  docId: string;
+  fact: TaxFact;
+  selected?: boolean;
+  onSelect?: () => void;
+}) {
   const toggle = useAppStore((s) => s.toggleFactConfirm);
   const edit = useAppStore((s) => s.editFact);
   const [editing, setEditing] = useState(false);
@@ -25,9 +35,11 @@ export function FactRow({ docId, fact }: { docId: string; fact: TaxFact }) {
 
   return (
     <div
+      onClick={onSelect}
       className={cn(
-        "flex flex-col gap-2 rounded-md border p-3 sm:flex-row sm:items-center sm:gap-4",
+        "flex flex-col gap-2 rounded-md border p-3 sm:flex-row sm:items-center sm:gap-4 cursor-pointer transition-colors",
         fact.confirmed_by_user ? "border-success/40 bg-success/5" : "border-border bg-background",
+        selected && "ring-1 ring-primary/40",
       )}
     >
       <div className="min-w-0 flex-1">
@@ -52,7 +64,10 @@ export function FactRow({ docId, fact }: { docId: string; fact: TaxFact }) {
             </Tooltip>
           </TooltipProvider>
         </div>
-        <p className="mt-1 truncate text-xs text-muted-foreground">{fact.canonical_field}</p>
+        <p className="mt-1 truncate text-xs text-muted-foreground">
+          {fact.canonical_field}
+          {fact.source_page ? ` · page ${fact.source_page}` : ""}
+        </p>
       </div>
       <div className="flex items-center gap-2 sm:w-72">
         {editing ? (

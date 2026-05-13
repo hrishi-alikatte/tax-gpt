@@ -6,7 +6,15 @@ import { useAppStore } from "@/lib/store";
 import { FactRow } from "./FactRow";
 import type { UploadedDoc } from "@/lib/types";
 
-export function DocumentCard({ doc }: { doc: UploadedDoc }) {
+export function DocumentCard({
+  doc,
+  selectedFact,
+  onSelectFact,
+}: {
+  doc: UploadedDoc;
+  selectedFact?: { docId: string; canonical: string } | null;
+  onSelectFact?: (docId: string, canonical: string) => void;
+}) {
   const confirmAll = useAppStore((s) => s.confirmAllInDoc);
   const confirmedCount = doc.facts.filter((f) => f.confirmed_by_user).length;
   const allConfirmed = doc.facts.length > 0 && confirmedCount === doc.facts.length;
@@ -47,7 +55,13 @@ export function DocumentCard({ doc }: { doc: UploadedDoc }) {
               </div>
               <div className="space-y-2">
                 {doc.facts.map((f) => (
-                  <FactRow key={f.canonical_field} docId={doc.id} fact={f} />
+                  <FactRow
+                    key={f.canonical_field}
+                    docId={doc.id}
+                    fact={f}
+                    selected={selectedFact?.docId === doc.id && selectedFact?.canonical === f.canonical_field}
+                    onSelect={onSelectFact ? () => onSelectFact(doc.id, f.canonical_field) : undefined}
+                  />
                 ))}
               </div>
             </>

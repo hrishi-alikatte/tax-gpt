@@ -1,12 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { PageTransition } from "@/components/PageTransition";
-import { Upload, FileText, X } from "lucide-react";
+import { Upload, FileText, X, Eye, EyeOff } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { extractDocument } from "@/lib/api";
 import type { UploadedDoc } from "@/lib/types";
@@ -23,10 +23,25 @@ function UploadPage() {
   const updateDocument = useAppStore((s) => s.updateDocument);
   const removeDocument = useAppStore((s) => s.removeDocument);
 
+  // Store file → object URL for in-browser PDF preview (not serializable, so kept in ref)
+  const fileUrlsRef = useRef<Map<string, string>>(new Map());
+  const [previewOpen, setPreviewOpen] = useState<Set<string>>(new Set());
+
+  const togglePreview = (id: string) => {
+    setPreviewOpen((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const handleFiles = useCallback(
     async (files: File[]) => {
       for (const file of files) {
         const id = crypto.randomUUID();
+        const objectUrl = URL.createObjectURL(file);
+        fileUrlsRef.current.set(id, objectUrl);
         const doc: UploadedDoc = {
           id,
           filename: file.name,
@@ -85,30 +100,60 @@ function UploadPage() {
       {documents.length > 0 && (
         <ul className="mt-8 space-y-3">
           {documents.map((doc) => (
-            <li key={doc.id} className="rounded-lg border bg-card p-4">
-              <div className="flex items-center gap-3">
+            <li key={doc.id} className="overflow-hidden rounded-lg border bg-card">
+              <div className="flex items-center gap-3 p-4">
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <span className="flex-1 truncate text-sm font-medium">{doc.filename}</span>
                 <StatusBadge doc={doc} />
+                {doc.status === "ready" && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 gap-1 text-xs"
+                    onClick={() => togglePreview(doc.id)}
+                  >
+                    {previewOpen.has(doc.id) ? (
+                      <><EyeOff className="h-3.5 w-3.5" /> Hide</>
+                    ) : (
+                      <><Eye className="h-3.5 w-3.5" /> Preview</>
+                    )}
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => removeDocument(doc.id)}
+                  onClick={() => {
+                    const url = fileUrlsRef.current.get(doc.id);
+                    if (url) URL.revokeObjectURL(url);
+                    fileUrlsRef.current.delete(doc.id);
+                    removeDocument(doc.id);
+                  }}
                   aria-label="Remove"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
               {doc.status !== "ready" && doc.status !== "error" && (
-                <Progress value={doc.progress} className="mt-3" />
+                <div className="px-4 pb-4">
+                  <Progress value={doc.progress} />
+                </div>
               )}
               {doc.status === "error" && (
-                <p className="mt-2 text-xs text-destructive">{doc.error}</p>
+                <p className="px-4 pb-3 text-xs text-destructive">{doc.error}</p>
               )}
               {doc.status === "ready" && (
-                <p className="mt-2 text-xs text-muted-foreground">
+                <div className="px-4 pb-3 text-xs text-muted-foreground">
                   {doc.facts.length} fact{doc.facts.length === 1 ? "" : "s"} extracted
-                </p>
+                </div>
+              )}
+              {doc.status === "ready" && previewOpen.has(doc.id) && (
+                <div className="border-t">
+                  <iframe
+                    src={fileUrlsRef.current.get(doc.id) ?? ""}
+                    title={`Preview of ${doc.filename}`}
+                    className="h-96 w-full"
+                  />
+                </div>
               )}
             </li>
           ))}
