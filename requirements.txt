@@ -24,10 +24,8 @@ langchain-openai==0.1.25
 langchain-text-splitters==0.2.4
 langgraph==0.2.74
 
-# Legacy embeddings/Groq adapters — DROP in future cleanup
-langchain-groq==0.1.14
-langchain-huggingface==0.1.2
-sentence-transformers==4.1.0
+# Legacy Groq adapter — DROP in Phase 3 cleanup
+langchain-groq==0.1.9
 
 # Azure OpenAI SDK
 openai==1.76.2
@@ -40,5 +38,5 @@ pytest==8.4.0
 
 # API
 uvicorn==0.34.2
-fastapi==0.115.12
+fastapi==0.115.9
 python-multipart==0.0.20
