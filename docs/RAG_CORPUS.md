@@ -32,6 +32,7 @@ If a question cannot be answered from (1)–(3), the system **refuses**.
 
 - `vd_2025_instructions` (active).
 - `vd_2024_instructions` (historical only — never returned by `all_active_sources()`).
+- `vd_ch_*` — Official vd.ch HTML pages (scraped live when `SCRAPE_VD_CH=true`). Authority rank 1, citation format `[vd.ch — Article Title]`. Ingested into the same collection as the PDF — the retriever queries across both.
 - Future: official Federal AFC documents (when added by `vaud-tax-domain-analyst`).
 
 ## 5. Excluded sources
@@ -95,6 +96,7 @@ Any chunk missing one of these keys must be rejected at ingest time.
 - Every non-refused answer **must** include at least one citation token.
 - Token format:
   - `[Vaud 2025 Instructions p.N]` when the PDF page is known.
+  - `[vd.ch — Article Title]` when the source is a scraped vd.ch web page.
   - `[Vaud 2025 Instructions, page pending verification]` when only the source is known.
 - Tokens that do not correspond to a chunk in the retrieved set are forbidden. The wrapper validates this.
 - Tokens for the historical 2024 source are forbidden in answers about 2025.

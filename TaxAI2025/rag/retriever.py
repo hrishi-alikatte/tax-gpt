@@ -40,7 +40,7 @@ def _expected_stamp() -> IndexStamp:
 
 
 def _to_int_or_none(value: Any) -> int | None:
-    if value in (None, ""):
+    if value in (None, "", 0):
         return None
     try:
         return int(value)

@@ -230,12 +230,13 @@ RULES: list[CompletenessRule] = [
         trigger=_trigger_missing_for_all("medical.unreimbursed_chf"),
         missing_message_en=(
             "No unreimbursed medical or dental costs were confirmed. If you "
-            "paid significant out-of-pocket health costs, keep the bills for review."
+            "paid significant out-of-pocket health costs exceeding 5% of your "
+            "net income, you may have a deduction worth declaring."
         ),
         asks_for=("medical.unreimbursed_chf",),
         source_doc=SOURCE_DOC,
-        pdf_page=None,
-        source_level="inferred",
+        pdf_page=48,
+        source_level="vaud_official",
         severity="nice_to_have",
         verification_status="pending",
     ),
@@ -249,8 +250,8 @@ RULES: list[CompletenessRule] = [
         ),
         asks_for=("medical.unreimbursed_chf",),
         source_doc=SOURCE_DOC,
-        pdf_page=None,
-        source_level="inferred",
+        pdf_page=48,
+        source_level="vaud_official",
         severity="nice_to_have",
         verification_status="pending",
     ),
@@ -274,14 +275,14 @@ RULES: list[CompletenessRule] = [
         title_en="Dependent support not checked",
         trigger=_trigger_missing_for_all("parental_support.paid_chf"),
         missing_message_en=(
-            "No support paid to parents or dependents was confirmed. If this "
-            "applies, collect proof before mapping values into VaudTax."
+            "No support paid to parents or dependents was confirmed. If you "
+            "financially support a person in need, you may claim a social deduction."
         ),
         asks_for=("parental_support.paid_chf",),
         source_doc=SOURCE_DOC,
-        pdf_page=None,
-        source_level="inferred",
-        severity="nice_to_have",
+        pdf_page=45,
+        source_level="vaud_official",
+        severity="likely_missing",
         verification_status="pending",
     ),
     CompletenessRule(
@@ -334,28 +335,14 @@ RULES: list[CompletenessRule] = [
         title_en="Mortgage interest not checked",
         trigger=_trigger_missing_for_all("mortgage.annual_interest_chf"),
         missing_message_en=(
-            "No mortgage interest statement was confirmed. If you own property "
-            "with a mortgage, gather the annual interest statement."
+            "No mortgage or capital-interest deduction was confirmed. If you "
+            "pay interest on a mortgage or savings capital, the annual statement "
+            "supports a deduction under Code 480."
         ),
         asks_for=("mortgage.annual_interest_chf",),
         source_doc=SOURCE_DOC,
-        pdf_page=None,
-        source_level="inferred",
-        severity="nice_to_have",
-        verification_status="pending",
-    ),
-    CompletenessRule(
-        id="VD-FOREIGN-INCOME-001",
-        title_en="Foreign income not checked",
-        trigger=_trigger_missing_for_all("foreign_income.gross_chf"),
-        missing_message_en=(
-            "No foreign income attestation was confirmed. If you received "
-            "income outside Switzerland, keep the source documents for review."
-        ),
-        asks_for=("foreign_income.gross_chf",),
-        source_doc=SOURCE_DOC,
-        pdf_page=None,
-        source_level="inferred",
+        pdf_page=40,
+        source_level="vaud_official",
         severity="likely_missing",
         verification_status="pending",
     ),
@@ -364,13 +351,15 @@ RULES: list[CompletenessRule] = [
         title_en="Unemployment benefits not checked",
         trigger=_trigger_missing_for_all("unemployment.benefits_chf"),
         missing_message_en=(
-            "No unemployment-benefits attestation was confirmed. If you received "
-            "benefits, add the annual statement."
+            "No unemployment or loss-of-gain benefits were confirmed. If you "
+            "received AC, APG or military-service indemnities, the annual "
+            "statement must be declared (Code 200 for direct benefits; "
+            "employer-paid RHT is included in your salary certificate)."
         ),
         asks_for=("unemployment.benefits_chf",),
         source_doc=SOURCE_DOC,
-        pdf_page=None,
-        source_level="inferred",
+        pdf_page=26,
+        source_level="vaud_official",
         severity="likely_missing",
         verification_status="pending",
     ),

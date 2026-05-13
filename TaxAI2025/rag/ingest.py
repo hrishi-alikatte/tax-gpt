@@ -4,6 +4,8 @@ Loads `data/official/vd_2025.pdf` page by page, chunks via
 RecursiveCharacterTextSplitter, embeds each chunk via the model router, and
 persists everything to ChromaDB with a full metadata payload + an IndexStamp.
 
+Also supports ingestion of scraped vd.ch web content into the same collection.
+
 Determinism / safety:
   - 1-indexed PDF pages (asserted; `pdf_page is None` is a bug).
   - Every chunk carries all 14 metadata keys from
@@ -101,6 +103,36 @@ def _chunk_metadata(
     }
 
 
+def _chunk_metadata_web(
+    *,
+    source: RagSource,
+    embed_model: str,
+    embed_dims: int,
+    topic: str = "",
+) -> dict[str, Any]:
+    """Build per-chunk metadata for a web (non-PDF) source.
+
+    Web sources use `pdf_page = 0` as a sentinel since the schema requires an
+    int. The retriever treats 0 as "no page" (same as None).
+    """
+    return {
+        "embedding_model": embed_model,
+        "embedding_dimensions": embed_dims,
+        "source_id": source.source_id,
+        "source_title": source.title,
+        "source_url": source.url or "",
+        "source_hash": source.source_hash,
+        "tax_year": source.tax_year,
+        "canton": source.canton or "",
+        "language": source.language,
+        "pdf_page": 0,  # sentinel: no PDF page
+        "printed_page": "",
+        "section_title": "",
+        "vaud_codes": "",
+        "topic": topic,
+    }
+
+
 def _expected_stamp(source: RagSource) -> IndexStamp:
     return IndexStamp(
         embedding_model=embedding_config.PRIMARY_EMBEDDING_MODEL,
@@ -129,9 +161,11 @@ def _validate_chunk_metadata(meta: dict[str, Any]) -> None:
     missing = required - set(meta.keys())
     if missing:
         raise RuntimeError(f"Chunk metadata missing keys: {sorted(missing)}")
-    if meta.get("pdf_page") is None or not isinstance(meta["pdf_page"], int):
+    pdf_page = meta.get("pdf_page")
+    # pdf_page = 0 is the sentinel for web sources (non-PDF)
+    if pdf_page is None or not isinstance(pdf_page, int):
         raise RuntimeError(
-            "pdf_page must be a 1-indexed int at ingest. "
+            "pdf_page must be an int at ingest. "
             "None or non-int is a bug per RAG_CORPUS.md §6."
         )
 
@@ -143,17 +177,52 @@ def _chroma_client(index_dir: Path):
     return chromadb.PersistentClient(path=str(index_dir))
 
 
+def _embed_and_add(
+    coll: Any,
+    chunk_ids: list[str],
+    chunk_texts: list[str],
+    chunk_metas: list[dict[str, Any]],
+    embed: Embedder,
+) -> int:
+    """Embed a batch of chunks and add them to a Chroma collection.
+
+    Returns the number of chunks added.
+    """
+    if not chunk_ids:
+        return 0
+    embeddings: list[list[float]] = []
+    for start in range(0, len(chunk_texts), EMBED_BATCH_SIZE):
+        batch = chunk_texts[start : start + EMBED_BATCH_SIZE]
+        embeddings.extend(embed(batch))
+    if len(embeddings) != len(chunk_ids):
+        raise RuntimeError(
+            f"Embedding count {len(embeddings)} != chunk count {len(chunk_ids)}"
+        )
+    coll.add(
+        ids=chunk_ids,
+        documents=chunk_texts,
+        metadatas=chunk_metas,
+        embeddings=embeddings,
+    )
+    return len(chunk_ids)
+
 def build_index(
     *,
     force_rebuild: bool = False,
     index_dir: Path | None = None,
     embedder: Embedder | None = None,
     chroma_client_factory: Callable[[Path], Any] | None = None,
+    include_web_sources: bool = False,
 ) -> dict[str, Any]:
     """Embed the active corpus and persist to ChromaDB.
 
     No-op if a compatible stamp already exists at `index_dir` unless
     `force_rebuild=True`. Returns a result dict for inspection.
+
+    Args:
+        include_web_sources: If True, also scrape and ingest vd.ch web content.
+            This requires network access and is controlled by the SCRAPE_VD_CH
+            env var (see sources.active_web_sources).
     """
     embed = embedder or model_router.embed_texts
     factory = chroma_client_factory or _chroma_client
@@ -174,6 +243,18 @@ def build_index(
         }
 
     splitter = _splitter()
+    coll_name = collection_name(source)
+    client = factory(target_dir)
+    try:
+        client.delete_collection(coll_name)
+    except Exception:  # noqa: BLE001 — first build or already absent
+        pass
+    coll = client.create_collection(
+        name=coll_name,
+        metadata={"hnsw:space": embedding_config.SIMILARITY},
+    )
+
+    # ---- PDF chunks ----------------------------------------------------------
     chunk_ids: list[str] = []
     chunk_texts: list[str] = []
     chunk_metas: list[dict[str, Any]] = []
@@ -201,38 +282,51 @@ def build_index(
     if not chunk_ids:
         raise RuntimeError(f"No usable text extracted from {pdf_path}")
 
-    embeddings: list[list[float]] = []
-    for start in range(0, len(chunk_texts), EMBED_BATCH_SIZE):
-        batch = chunk_texts[start : start + EMBED_BATCH_SIZE]
-        embeddings.extend(embed(batch))
+    pdf_count = _embed_and_add(coll, chunk_ids, chunk_texts, chunk_metas, embed)
+    logger.info("Indexed %d PDF chunks at %s", pdf_count, target_dir)
 
-    if len(embeddings) != len(chunk_ids):
-        raise RuntimeError(
-            f"Embedding count {len(embeddings)} != chunk count {len(chunk_ids)}"
-        )
+    # ---- Web chunks (optional) -----------------------------------------------
+    web_count = 0
+    if include_web_sources:
+        from TaxAI2025.scraper import vd_ch as scraper
 
-    client = factory(target_dir)
-    coll_name = collection_name(source)
-    try:
-        client.delete_collection(coll_name)
-    except Exception:  # noqa: BLE001 — first build or already absent
-        pass
-    coll = client.create_collection(
-        name=coll_name,
-        metadata={"hnsw:space": embedding_config.SIMILARITY},
-    )
-    coll.add(
-        ids=chunk_ids,
-        documents=chunk_texts,
-        metadatas=chunk_metas,
-        embeddings=embeddings,
-    )
+        web_sources = sources.active_web_sources()
+        for ws in web_sources:
+            try:
+                page_chunks = scraper.scrape_page(
+                    url=ws.url,
+                    title=ws.title,
+                    topic=ws.source_id.replace("vd_ch_", ""),
+                )
+                w_ids: list[str] = []
+                w_texts: list[str] = []
+                w_metas: list[dict[str, Any]] = []
+                for pc in page_chunks:
+                    meta = _chunk_metadata_web(
+                        source=ws,
+                        embed_model=embedding_config.PRIMARY_EMBEDDING_MODEL,
+                        embed_dims=embedding_config.PRIMARY_DIMENSIONS,
+                        topic=pc.topic,
+                    )
+                    _validate_chunk_metadata(meta)
+                    w_ids.append(pc.chunk_id)
+                    w_texts.append(pc.text)
+                    w_metas.append(meta)
+
+                added = _embed_and_add(coll, w_ids, w_texts, w_metas, embed)
+                web_count += added
+                logger.info("Indexed %d web chunks from %s", added, ws.url)
+            except Exception as e:  # noqa: BLE001
+                logger.error("Failed to ingest web source %s: %s", ws.url, e)
 
     write_stamp(target_dir, expected)
-    logger.info("Indexed %d chunks at %s", len(chunk_ids), target_dir)
+    total = pdf_count + web_count
+    logger.info("Indexed %d total chunks at %s", total, target_dir)
     return {
         "status": "built",
         "index_dir": str(target_dir),
-        "chunk_count": len(chunk_ids),
+        "pdf_chunk_count": pdf_count,
+        "web_chunk_count": web_count,
+        "chunk_count": total,
         "collection": coll_name,
     }
