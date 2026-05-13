@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - staging
     paths:
       - "Vaud Tax Guide/**"
       - ".github/workflows/deploy-cloudflare.yml"
@@ -18,6 +19,9 @@ jobs:
     defaults:
       run:
         working-directory: "Vaud Tax Guide"
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+      url: ${{ github.ref == 'refs/heads/main' && 'https://tax-gpt.online' || 'https://staging.tax-gpt.online' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,14 +36,8 @@ jobs:
 
       - name: Build (Cloudflare Workers target)
         env:
-          VITE_API_BASE_URL: https://api.tax-gpt.online
+          VITE_API_BASE_URL: ${{ github.ref == 'refs/heads/main' && 'https://api.tax-gpt.online' || 'https://api-staging.tax-gpt.online' }}
         run: bun run build
-
-      - name: Show wrangler context
-        run: |
-          echo "PWD: $(pwd)"
-          ls -la
-          if [ -d dist/server ]; then ls -la dist/server; fi
 
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
@@ -56,7 +54,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: wrangler-logs
+          name: wrangler-logs-${{ github.ref_name }}
           path: ~/.config/.wrangler/logs/
           if-no-files-found: ignore
           retention-days: 7

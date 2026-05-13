@@ -10,6 +10,7 @@ UI confirmation gate.
 """
 from __future__ import annotations
 
+import logging
 import re
 from datetime import datetime
 from typing import Any, Iterable
@@ -23,6 +24,7 @@ from TaxAI2025.extraction.confidence import (
 )
 from TaxAI2025.extraction.ocr import PageText
 
+logger = logging.getLogger(__name__)
 
 _NUMBER = r"(?P<num>[0-9]{1,3}(?:[' ,.][0-9]{3})*(?:[.,][0-9]{2})?)"
 
@@ -368,11 +370,160 @@ def _snippet_in_page(snippet: str, page_text: str) -> bool:
     return bool(normalized) and normalized in page_text.casefold()
 
 
+# ---------------------------------------------------------------------------
+# Multi-page context extraction
+# ---------------------------------------------------------------------------
+
+MAX_PAGES_PER_BATCH = 3  # Swiss salary certs typically span 2–3 pages
+
+
+def _build_context_window(
+    pages: list[PageText], focus_page_idx: int
+) -> tuple[list[PageText], str]:
+    """Build a context window of adjacent pages around the focus page.
+
+    Returns (context_pages, context_text) where context_pages are the pages
+    included in the window (for provenance validation).
+    """
+    start = max(0, focus_page_idx - 1)
+    end = min(len(pages), focus_page_idx + 2)  # exclusive
+    context_pages = pages[start:end]
+    context_text = ""
+    for p in context_pages:
+        context_text += f"\n--- PAGE {p.pdf_page} ---\n{p.text}\n"
+    return context_pages, context_text
+
+
+def _llm_extract_with_context(
+    record: DocumentRecord,
+    pages: list[PageText],
+    target_fields: list[str],
+) -> list[TaxFact]:
+    """Extract fields using multi-page context windows.
+
+    Instead of processing each page in isolation, we build sliding windows
+    of adjacent pages. This is critical for Swiss documents where values
+    like gross/net salary and deductions span multiple pages.
+    """
+    if not target_fields or not pages:
+        return []
+
+    from TaxAI2025.ai import model_router
+
+    schema = _llm_residual_schema(target_fields)
+
+    # Group pages into overlapping context windows
+    windows: list[tuple[int, list[PageText], str]] = []
+    if len(pages) <= MAX_PAGES_PER_BATCH:
+        # Small doc: process all pages together
+        all_text = ""
+        for p in pages:
+            all_text += f"\n--- PAGE {p.pdf_page} ---\n{p.text}\n"
+        windows.append((0, pages, all_text))
+    else:
+        # Larger doc: use sliding windows with overlap
+        for i in range(0, len(pages), MAX_PAGES_PER_BATCH - 1):
+            window_pages = pages[i : i + MAX_PAGES_PER_BATCH]
+            window_text = ""
+            for p in window_pages:
+                window_text += f"\n--- PAGE {p.pdf_page} ---\n{p.text}\n"
+            windows.append((i, window_pages, window_text))
+
+    now = datetime.utcnow()
+    routing = model_router.route("document_extraction")
+    model_name = f"{routing['provider']}:{routing['deployment']}"
+
+    all_facts: list[TaxFact] = []
+    seen_fields: set[str] = set()
+
+    for window_idx, window_pages, window_text in windows:
+        system = (
+            "You extract Swiss Vaud tax fields from a tax document. "
+            "Return strict JSON matching the provided schema. "
+            "Only include fields you can locate in the source text. "
+            "source_page must be the 1-indexed PDF page where the value appears. "
+            "snippet must be copied literally from the source text and support the value. "
+            "Never invent values. Never invent pages. If unsure, omit the field.\n\n"
+            "The document may span multiple pages. Each page is marked with --- PAGE N ---. "
+            "Use the page number where the value actually appears for source_page."
+        )
+        user = (
+            f"Document type: {record.document_type}\n"
+            f"Target fields: {', '.join(target_fields)}\n\n"
+            f"{window_text}"
+        )
+        try:
+            payload = model_router.generate_json(
+                [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+                schema=schema,
+                purpose="document_extraction",
+            )
+        except Exception as e:
+            logger.warning("LLM extraction failed for window %d: %s", window_idx, e)
+            continue
+
+        raw_facts = payload.get("facts") if isinstance(payload, dict) else None
+        if not isinstance(raw_facts, list):
+            continue
+
+        # Build set of valid page numbers for this window
+        valid_pages = {p.pdf_page for p in window_pages}
+        # Build text lookup for validation
+        page_text_map = {p.pdf_page: p.text for p in window_pages}
+
+        for raw in raw_facts:
+            if not isinstance(raw, dict):
+                continue
+            canonical_field = raw.get("canonical_field")
+            if canonical_field not in target_fields:
+                continue
+            if canonical_field in seen_fields:
+                continue
+            value = raw.get("value")
+            if value is None:
+                continue
+            page_no = raw.get("source_page")
+            if page_no not in valid_pages:
+                continue
+            snippet = raw.get("snippet")
+            if not isinstance(snippet, str):
+                continue
+            # Validate snippet appears on claimed page
+            page_text = page_text_map.get(page_no, "")
+            if not _snippet_in_page(snippet, page_text):
+                continue
+
+            all_facts.append(
+                TaxFact(
+                    canonical_field=canonical_field,
+                    value=value,
+                    source_doc=record.filename,
+                    source_page=page_no,
+                    snippet=snippet,
+                    confidence=score_llm_extraction(raw),
+                    extraction_method="llm_structured",
+                    model_name=model_name,
+                    extracted_at=now,
+                    confirmed_by_user=False,
+                )
+            )
+            seen_fields.add(canonical_field)
+
+    return all_facts
+
+
 def _llm_extract_page(
     record: DocumentRecord,
     page: PageText,
     target_fields: list[str],
 ) -> list[TaxFact]:
+    """DEPRECATED: Use _llm_extract_with_context for production.
+
+    Kept for backward compatibility in tests.
+    """
     if not target_fields:
         return []
 
@@ -468,12 +619,17 @@ def _dedupe_by_field(facts: Iterable[TaxFact]) -> list[TaxFact]:
 
 
 def _llm_extract_document(record: DocumentRecord, pages: list[PageText]) -> list[TaxFact]:
+    """Extract facts from document using multi-page context.
+
+    For documents with ≤3 pages, processes all pages together.
+    For longer documents, uses sliding windows.
+    """
     target_fields = _RESIDUAL_FIELDS.get(record.document_type, [])
     if not target_fields:
         return []
-    facts: list[TaxFact] = []
-    for page in pages:
-        facts.extend(_llm_extract_page(record, page, target_fields))
+
+    # Use multi-page context extraction
+    facts = _llm_extract_with_context(record, pages, target_fields)
     return _dedupe_by_field(facts)
 
 

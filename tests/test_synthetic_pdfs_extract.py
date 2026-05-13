@@ -69,7 +69,14 @@ def test_synthetic_pdf_extracts_expected_fields(
     filename: str,
     expected_doc_type: str,
     expected_fields: set[str],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    # Mock LLM extraction — these tests validate the regex pipeline only.
+    from TaxAI2025.ai import model_router
+
+    monkeypatch.setattr(model_router, "generate_json", lambda *a, **k: {"facts": []})
+    monkeypatch.setattr(model_router, "route", lambda purpose: {"provider": "mock", "deployment": "mock"})
+
     record, facts = extract_from_upload(generated_pdfs / filename)
     assert record.document_type == expected_doc_type, (
         f"{filename}: classified as {record.document_type!r}, expected {expected_doc_type!r}"

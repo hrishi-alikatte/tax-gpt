@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - staging
     paths:
       - "main.py"
       - "TaxAI2025/**"
@@ -20,7 +21,7 @@ permissions:
   contents: read
 
 jobs:
-  test-build-deploy:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,11 +37,20 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
-          python -m pip install -r requirements-cloudrun.txt
           python -m pip install -e .
 
       - name: Run tests
         run: python -m pytest tests/ -q
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+      url: ${{ github.ref == 'refs/heads/main' && 'https://api.tax-gpt.online' || 'https://api-staging.tax-gpt.online' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Azure Login
         uses: azure/login@v2
@@ -62,7 +72,7 @@ jobs:
       - name: Deploy API to Container Apps
         run: |
           az containerapp update \
-            --name aca-vaudtaxai-api \
+            --name ${{ github.ref == 'refs/heads/main' && 'aca-vaudtaxai-api' || 'aca-vaudtaxai-api-staging' }} \
             --resource-group rg-vaudtaxai \
             --image acrvaudtaxai.azurecr.io/vaudtaxai-api:${{ github.sha }} \
             --set-env-vars \
@@ -74,9 +84,9 @@ jobs:
               AZURE_OPENAI_EMBEDDING_DEPLOYMENT=${{ secrets.AZURE_OPENAI_EMBEDDING_DEPLOYMENT }} \
               RAG_AUTO_BUILD_INDEX=true
 
-      - name: Smoke check API healthz on default FQDN
+      - name: Smoke check API healthz
         run: |
-          FQDN=$(az containerapp show -n aca-vaudtaxai-api -g rg-vaudtaxai \
+          FQDN=$(az containerapp show -n ${{ github.ref == 'refs/heads/main' && 'aca-vaudtaxai-api' || 'aca-vaudtaxai-api-staging' }} -g rg-vaudtaxai \
             --query "properties.configuration.ingress.fqdn" -o tsv)
           echo "Default FQDN: $FQDN"
           for i in 1 2 3 4 5 6 7 8 9 10; do
@@ -88,5 +98,5 @@ jobs:
             sleep 15
           done
           echo "Healthz never came up. Last logs:"
-          az containerapp logs show -n aca-vaudtaxai-api -g rg-vaudtaxai --tail 50 || true
+          az containerapp logs show -n ${{ github.ref == 'refs/heads/main' && 'aca-vaudtaxai-api' || 'aca-vaudtaxai-api-staging' }} -g rg-vaudtaxai --tail 50 || true
           exit 1

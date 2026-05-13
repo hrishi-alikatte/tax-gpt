@@ -1,48 +1,44 @@
-# VaudTaxAI dependencies. Minimal additions required for Azure-backed RAG + tests.
-# Notes:
-#   - Removed `langchain-classic` (not a published package; chains import from `langchain`).
-#   - Removed `langchain-huggingface` and `sentence-transformers` (replaced by Azure embeddings).
-#   - Removed `langchain-groq` (Groq is demo-only and called via the `groq` SDK directly).
-# See docs/RAG_CORPUS.md for the active stack.
+# VaudTaxAI production dependencies — pinned for reproducibility.
+# Last updated: 2026-05-13
+# Update with: pip install --upgrade <pkg>, then pin new version here.
 
 # Core
-pydantic>=2.7.0,<2.9.0
-python-dotenv>=1.0.0
+pydantic==2.11.4
+python-dotenv==1.1.0
 
-# UI
-flet>=0.21.0
+# UI (legacy desktop path; not shipped in container)
+flet==0.21.2
 
 # RAG / vectors
-chromadb>=0.4.0
-pypdf>=4.0.0
+chromadb==1.0.7
+pypdf==5.4.0
 
 # Extraction
-pdfplumber>=0.11.0
+pdfplumber==0.11.6
 
-# LangChain (kept for the legacy `TaxAI2025/brain/rag.py` path; new code uses the SDK directly).
-langchain>=0.2.12,<0.3
-langchain-core>=0.2.28,<0.3
-langchain-community>=0.2.11,<0.3
-langchain-openai>=0.1.20
-langchain-text-splitters>=0.2.0,<0.3
-langgraph>=0.2.0,<0.3
+# LangChain (legacy brain/rag.py path; migrate away in future)
+langchain==0.2.17
+langchain-core==0.2.43
+langchain-community==0.2.19
+langchain-openai==0.1.25
+langchain-text-splitters==0.2.4
+langgraph==0.2.74
 
-# Legacy embeddings/Groq adapters (kept so the old brain/rag.py path still imports cleanly).
-# The new Azure path does NOT depend on these — drop in a future cleanup.
-langchain-groq>=0.1.9,<0.3
-langchain-huggingface>=0.0.3
-sentence-transformers>=2.2.0
+# Legacy embeddings/Groq adapters — DROP in future cleanup
+langchain-groq==0.1.14
+langchain-huggingface==0.1.2
+sentence-transformers==4.1.0
 
-# Azure OpenAI SDK (used by the model router and embedding pipeline).
-openai>=1.40.0
+# Azure OpenAI SDK
+openai==1.76.2
 
-# Groq SDK (demo fallback only; never imported at module top-level for the main path).
-groq>=0.11.0
+# Groq SDK (demo fallback only)
+groq==0.22.0
 
 # Test / dev
-pytest>=8.0.0
+pytest==8.4.0
 
 # API
-uvicorn>=0.30.0
-fastapi>=0.110.0
-python-multipart>=0.0.9
+uvicorn==0.34.2
+fastapi==0.115.12
+python-multipart==0.0.20

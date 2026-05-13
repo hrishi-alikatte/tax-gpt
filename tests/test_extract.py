@@ -144,9 +144,10 @@ def test_llm_primary_runs_with_all_document_fields_then_regex_cross_checks(
     assert "salary.ahv_iv_eo_chf" in schema_fields
 
 
-def test_llm_extraction_runs_once_per_page(
+def test_llm_extraction_uses_multi_page_context(
     azure_and_groq_env: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """Small documents (≤3 pages) are processed in a single LLM call with full context."""
     pages = [
         PageText(pdf_page=1, text="Page one only"),
         PageText(pdf_page=2, text="Page two only"),
@@ -164,9 +165,12 @@ def test_llm_extraction_runs_once_per_page(
     from TaxAI2025.extraction.extract import extract_facts
 
     assert extract_facts(_record("health_insurance_premium"), pages) == []
-    assert len(captured_user_messages) == 2
-    assert "[page 1]" in captured_user_messages[0]
-    assert "[page 2]" in captured_user_messages[1]
+    # With multi-page context, both pages are sent in ONE call
+    assert len(captured_user_messages) == 1
+    assert "--- PAGE 1 ---" in captured_user_messages[0]
+    assert "--- PAGE 2 ---" in captured_user_messages[0]
+    assert "Page one only" in captured_user_messages[0]
+    assert "Page two only" in captured_user_messages[0]
 
 
 def test_llm_fact_with_hallucinated_snippet_is_dropped(

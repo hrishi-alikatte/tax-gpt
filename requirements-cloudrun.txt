@@ -1,21 +1,15 @@
-# Lean runtime dependency set for Google Cloud Run.
-# Keep legacy LangChain/HuggingFace/Torch adapters in requirements.txt for
-# desktop continuity; do not ship them in the web container unless a live caller
-# needs them again.
+# Slim runtime for Azure Container Apps (no legacy LangChain/HuggingFace).
+# Keep in sync with requirements.txt for overlapping packages.
 
-pydantic>=2.7.0,<2.9.0
-python-dotenv>=1.0.0
-
+pydantic==2.11.4
+python-dotenv==1.1.0
 flet==0.21.2
-
-chromadb>=0.4.0
-pypdf>=4.0.0
-pdfplumber>=0.11.0
-langchain-text-splitters>=0.2.0,<0.3
-
-openai>=1.40.0
-groq>=0.11.0
-
-uvicorn>=0.30.0
-fastapi>=0.110.0
-python-multipart>=0.0.9
+chromadb==1.0.7
+pypdf==5.4.0
+pdfplumber==0.11.6
+langchain-text-splitters==0.2.4
+openai==1.76.2
+groq==0.22.0
+uvicorn==0.34.2
+fastapi==0.115.12
+python-multipart==0.0.20
